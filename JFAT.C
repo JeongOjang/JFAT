@@ -1,14 +1,14 @@
-///////////////////////////////////////////////////////////////////////////////
+ï»¿///////////////////////////////////////////////////////////////////////////////
 //                      FAT12/FAT16/FAT32 FileSystem
 //
-//                  ROM:12K, SRAM:3K (ÃøÁ¤ÀÏ 2022-05-14)
+//                  ROM:12K, SRAM:3K (ì¸¡ì •ì¼ 2022-05-14)
 //
-// 2022-03-17 ÇÑ±Û ÆÄÀÏ¸í Ã³¸®
-// 2022-04-23 SUPPORT_UTF8==0 À¸·Î ÇÏ¸é ÅäÅ»Ä¿¸à´õ·Î ImageDisk¿¡ ³ÖÀº LFNÀÎ½Ä
-// 2022-05-13 LFN ÆÄÀÏ »ı¼º
+// 2022-03-17 í•œê¸€ íŒŒì¼ëª… ì²˜ë¦¬
+// 2022-04-23 SUPPORT_UTF8==0 ìœ¼ë¡œ í•˜ë©´ í† íƒˆì»¤ë©˜ë”ë¡œ ImageDiskì— ë„£ì€ LFNì¸ì‹
+// 2022-05-13 LFN íŒŒì¼ ìƒì„±
 //
-// Á¦¾à: ÆÄÀÏÀ» »èÁ¦ÇÒ ¶§ ÆÄÀÏ¸í ¹®ÀÚ¼ö°¡ 194(13*15)º¸´Ù Å©¸é ÀÏºÎ LFN ¿£Æ®¸®°¡ »èÁ¦µÇÁö ¾ÊÀ½
-//       FAT12¿¡¼­´Â ÀĞ±â¸¸ Áö¿øÇÔ
+// ì œì•½: íŒŒì¼ì„ ì‚­ì œí•  ë•Œ íŒŒì¼ëª… ë¬¸ììˆ˜ê°€ 194(13*15)ë³´ë‹¤ í¬ë©´ ì¼ë¶€ LFN ì—”íŠ¸ë¦¬ê°€ ì‚­ì œë˜ì§€ ì•ŠìŒ
+//       FAT12ì—ì„œëŠ” ì½ê¸°ë§Œ ì§€ì›í•¨
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JLIB.H"
@@ -29,19 +29,19 @@ typedef struct _DIRENTRY
     {
     BYTE FileName[11];
     BYTE FileAttr;      //0B
-    BYTE LfnType;       //0C 83¿£Æ®¸®¿¡¼­´Â NT Resource (º¸Åë0)
-    BYTE LfnChkSum;     //0D 83¿£Æ®¸®¿¡¼­´Â Create Time Tenth (º¸Åë0)
-    WORD CreateTime;    //0E Win95¿¡¼­ Ãß°¡
-    WORD CreateDate;    //10 Win95¿¡¼­ Ãß°¡
-    WORD AccessDate;    //12 Win95¿¡¼­ Ãß°¡
-    WORD ClusterNoHi;   //14 Win95 OSR2¿¡¼­ Ãß°¡ (FAT32)
+    BYTE LfnType;       //0C 83ì—”íŠ¸ë¦¬ì—ì„œëŠ” NT Resource (ë³´í†µ0)
+    BYTE LfnChkSum;     //0D 83ì—”íŠ¸ë¦¬ì—ì„œëŠ” Create Time Tenth (ë³´í†µ0)
+    WORD CreateTime;    //0E Win95ì—ì„œ ì¶”ê°€
+    WORD CreateDate;    //10 Win95ì—ì„œ ì¶”ê°€
+    WORD AccessDate;    //12 Win95ì—ì„œ ì¶”ê°€
+    WORD ClusterNoHi;   //14 Win95 OSR2ì—ì„œ ì¶”ê°€ (FAT32)
     WORD LastModiTime;  //16
     WORD LastModiDate;  //18
     WORD StartCluster;  //1A
     DWORD FileSize;     //1C
     } DIRENTRY;         //20
 
-//DIRENTRY.ÆÄÀÏ¸í Ã¹ÀÚÀÇ ÀÇ¹Ì
+//DIRENTRY.íŒŒì¼ëª… ì²«ìì˜ ì˜ë¯¸
 #define DIRENTRY_END    0
 #define DIRENTRY_ERASE  0xE5
 
@@ -49,7 +49,7 @@ typedef struct _DIRENTRY
 #define FILE_ATTRIBUTE_LFN  (FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_HIDDEN|FILE_ATTRIBUTE_SYSTEM|FILE_ATTRIBUTE_VOLUME)
 
 
-//AccessStorageBytes()ÀÇ Access ÀÎÀÚ
+//AccessStorageBytes()ì˜ Access ì¸ì
 #define DEVICE_READ     0
 #define DEVICE_WRITE    1
 
@@ -78,15 +78,15 @@ typedef struct _DISKCONTROLBLOCK
     DWORD SctsPerCluster;
     DWORD RootDirSctNo;
     DWORD TotalClusters;
-    DWORD DiskSectorQty;        //µğ½ºÅ©ÀÇ ÃÑ ¼½ÅÍ¼ö
+    DWORD DiskSectorQty;        //ë””ìŠ¤í¬ì˜ ì´ ì„¹í„°ìˆ˜
     DWORD LastFreeClustNo;
-    DWORD BPB_LastFreeClustNo;  //ReadVolID()¿¡¼­ BPB¿¡ ÀúÀåµÈ ±â·ÏÇÒ À§Ä¡
-    BYTE  FatCacheDirtyFg;      //½ÇÁ¦ Disk ³»¿ë°ú Cache ³»¿ëÀÌ ´Ù¸¥ °æ¿ì
-    DWORD FatCachedSctNo;       //-1ÀÌ¸é Ä³½¬µÇÁö ¾ÊÀº °ÍÀÓ
+    DWORD BPB_LastFreeClustNo;  //ReadVolID()ì—ì„œ BPBì— ì €ì¥ëœ ê¸°ë¡í•  ìœ„ì¹˜
+    BYTE  FatCacheDirtyFg;      //ì‹¤ì œ Disk ë‚´ìš©ê³¼ Cache ë‚´ìš©ì´ ë‹¤ë¥¸ ê²½ìš°
+    DWORD FatCachedSctNo;       //-1ì´ë©´ ìºì‰¬ë˜ì§€ ì•Šì€ ê²ƒì„
     #ifdef USE_JOS
     JOS_EVENT* DCB_Sem;
     #endif
-    BYTE  FatCacheBuff[SUPPORTSECTORBYTES] ALIGN_END;   //DMA Àü¼Û½Ã ¹öÆÛÀÇ ½ÃÀÛ¹øÁö´Â 4·Î ³ª´©¾îÁ®¾ß ÇÔ
+    BYTE  FatCacheBuff[SUPPORTSECTORBYTES] ALIGN_END;   //DMA ì „ì†¡ì‹œ ë²„í¼ì˜ ì‹œì‘ë²ˆì§€ëŠ” 4ë¡œ ë‚˜ëˆ„ì–´ì ¸ì•¼ í•¨
     BYTE  SctBuffer[SUPPORTSECTORBYTES];
     } DISKCONTROLBLOCK;
 
@@ -95,15 +95,15 @@ static DISKCONTROLBLOCK DiskControlBlock[SUPPORTDISKMAX];
 
 typedef struct _FILECONTROLBLOCK
     {
-    BYTE  FileOpened;           //1ÀÌ¸é OpenµÇ¾î ÀÖ´Â °ÍÀÓ
+    BYTE  FileOpened;           //1ì´ë©´ Openë˜ì–´ ìˆëŠ” ê²ƒì„
     //BYTE  FileAttr;
     BYTE  OpenMode;
-    DWORD StartCluster;         //0ÀÎ °æ¿ì´Â ÆÄÀÏÅ©±â°¡ 0ÀÏ ¶§ÀÓ
-    DWORD AccCluster;           //ÇöÀç ÆÄÀÏ Æ÷ÀÎÅÍ°¡ À§Ä¡ÇÑ Å¬·¯½ºÅÍ
-    DWORD PrevAccCluster;       //±â·ÏÇÒ ¶§ AccCluster==Eof ÀÎ°æ¿ì Å¬·¯½ºÆ®¸¦ Ãß°¡ÇÒ´çÇÏ¿© ¿¬°áÇÒ ¶§ ÇÊ¿ä
+    DWORD StartCluster;         //0ì¸ ê²½ìš°ëŠ” íŒŒì¼í¬ê¸°ê°€ 0ì¼ ë•Œì„
+    DWORD AccCluster;           //í˜„ì¬ íŒŒì¼ í¬ì¸í„°ê°€ ìœ„ì¹˜í•œ í´ëŸ¬ìŠ¤í„°
+    DWORD PrevAccCluster;       //ê¸°ë¡í•  ë•Œ AccCluster==Eof ì¸ê²½ìš° í´ëŸ¬ìŠ¤íŠ¸ë¥¼ ì¶”ê°€í• ë‹¹í•˜ì—¬ ì—°ê²°í•  ë•Œ í•„ìš”
     DWORD FilePointer;
     DWORD FileSize;
-    DWORD DESctNo, DESctOfs;    //ÆÄÀÏÀ» »ı¼ºÇÑ °æ¿ì Å©±â¸¦ º¯°æÇØ¾ß ÇÏ¹Ç·Î DEÀÇ À§Ä¡¸¦ º¸°üÇÔ
+    DWORD DESctNo, DESctOfs;    //íŒŒì¼ì„ ìƒì„±í•œ ê²½ìš° í¬ê¸°ë¥¼ ë³€ê²½í•´ì•¼ í•˜ë¯€ë¡œ DEì˜ ìœ„ì¹˜ë¥¼ ë³´ê´€í•¨
     DISKCONTROLBLOCK *Dcb;
     } FILECONTROLBLOCK;
 
@@ -124,19 +124,19 @@ typedef struct _BPB_F16
     BYTE BootOsSign[8];         //03 'MSWIN4.0'
     WORD BytesPerSector;        //0B 512
     BYTE SectorsPerCluster;     //0D 64
-    WORD SystemUseSctNo;        //0E 1  - ½Ã½ºÅÛÀÌ »ç¿ëÇÏ´Â ¼½ÅÍ¼ö, FATÀÇ ½ÃÀÛÀ» °¡¸®Å´
-    BYTE FATCopys;              //10 2  - FAT¼ö
-    WORD RootDirEntrys;         //11 512 - ÃÖ´ë ¸ŞÀÎ µğ·ºÅÍ¸® ÆÄÀÏ¼ö
-    WORD OldTotalSectors;       //13 0  - µğ½ºÅ©ÀÇ ÃÑ ¼½ÅÍ (0=»ç¿ë¾ÈÇÔ)
-    BYTE MediaSign;             //15 0F8h  - ¸Şµğ¾ÆÁ¾·ù
+    WORD SystemUseSctNo;        //0E 1  - ì‹œìŠ¤í…œì´ ì‚¬ìš©í•˜ëŠ” ì„¹í„°ìˆ˜, FATì˜ ì‹œì‘ì„ ê°€ë¦¬í‚´
+    BYTE FATCopys;              //10 2  - FATìˆ˜
+    WORD RootDirEntrys;         //11 512 - ìµœëŒ€ ë©”ì¸ ë””ë ‰í„°ë¦¬ íŒŒì¼ìˆ˜
+    WORD OldTotalSectors;       //13 0  - ë””ìŠ¤í¬ì˜ ì´ ì„¹í„° (0=ì‚¬ìš©ì•ˆí•¨)
+    BYTE MediaSign;             //15 0F8h  - ë©”ë””ì•„ì¢…ë¥˜
     WORD SectorsPerFAT;         //16 192
     WORD SectorsPerHead;        //18 63
     WORD HeadQty;               //1A 128
-    DWORD StartRtvSctNo;        //1C 63 - ÀÌ µå¶óÀÌºêÀÇ ½ÃÀÛ ¼½ÅÍ¹øÈ£(ÇÏµåµğ½ºÅ© ÀüÃ¼¸¦ ±âÁØ, Ã³À½Àº 0), ÀÌ ºÎÆ®·¹ÄÚµå¸¦ °¡¸®Å´
-    DWORD BigTotalSectors;      //20 3144897 - ÀÌ µå¶óÀÌºêÀÇ ÃÑ¼½ÅÍ¼ö (ÀÌ ºÎÆ®¼½ÅÍºÎÅÍ ...)
-    BYTE PhyDiskNo;             //24 80h  - ¹°¸®ÀûÀÎ µå¶óÀÌºê ¹øÈ£
+    DWORD StartRtvSctNo;        //1C 63 - ì´ ë“œë¼ì´ë¸Œì˜ ì‹œì‘ ì„¹í„°ë²ˆí˜¸(í•˜ë“œë””ìŠ¤í¬ ì „ì²´ë¥¼ ê¸°ì¤€, ì²˜ìŒì€ 0), ì´ ë¶€íŠ¸ë ˆì½”ë“œë¥¼ ê°€ë¦¬í‚´
+    DWORD BigTotalSectors;      //20 3144897 - ì´ ë“œë¼ì´ë¸Œì˜ ì´ì„¹í„°ìˆ˜ (ì´ ë¶€íŠ¸ì„¹í„°ë¶€í„° ...)
+    BYTE PhyDiskNo;             //24 80h  - ë¬¼ë¦¬ì ì¸ ë“œë¼ì´ë¸Œ ë²ˆí˜¸
     BYTE Unknown1;              //25 0
-    BYTE ExtBootSign;           //26 29h - È®Àå ºÎÆ®·¹ÄÚ´õ »çÀÎ
+    BYTE ExtBootSign;           //26 29h - í™•ì¥ ë¶€íŠ¸ë ˆì½”ë” ì‚¬ì¸
     DWORD SerialNo;             //27 0C210FF5h
     CHAR VolumeLabel[11];       //2B 'No Name    '
     CHAR FileSystemSign[8];     //36 'FAT16   '
@@ -155,31 +155,31 @@ typedef struct _BPB_F32
     BYTE BootOsSign[8];         //03 'MSWIN4.0'
     WORD BytesPerSector;        //0B 512
     BYTE SectorsPerCluster;     //0D 64
-    WORD SystemUseSctNo;        //0E 1  - ½Ã½ºÅÛÀÌ »ç¿ëÇÏ´Â ¼½ÅÍ¼ö, FATÀÇ ½ÃÀÛÀ» °¡¸®Å´
-    BYTE FATCopys;              //10 2  - FAT¼ö
-    WORD RootDirEntrys;         //11 0 - ÃÖ´ë ¸ŞÀÎ µğ·ºÅÍ¸® ÆÄÀÏ¼ö (FAT32¿¡¼­´Â »ç¿ë¾ÈÇÔ)
-    WORD OldTotalSectors;       //13 0  - µğ½ºÅ©ÀÇ ÃÑ ¼½ÅÍ (0=»ç¿ë¾ÈÇÔ)
-    BYTE MediaSign;             //15 0F8h  - ¸Şµğ¾ÆÁ¾·ù
-    WORD SectorsPerFAT;         //16 0 (FAT32¿¡¼­´Â »ç¿ë¾ÈÇÔ)
+    WORD SystemUseSctNo;        //0E 1  - ì‹œìŠ¤í…œì´ ì‚¬ìš©í•˜ëŠ” ì„¹í„°ìˆ˜, FATì˜ ì‹œì‘ì„ ê°€ë¦¬í‚´
+    BYTE FATCopys;              //10 2  - FATìˆ˜
+    WORD RootDirEntrys;         //11 0 - ìµœëŒ€ ë©”ì¸ ë””ë ‰í„°ë¦¬ íŒŒì¼ìˆ˜ (FAT32ì—ì„œëŠ” ì‚¬ìš©ì•ˆí•¨)
+    WORD OldTotalSectors;       //13 0  - ë””ìŠ¤í¬ì˜ ì´ ì„¹í„° (0=ì‚¬ìš©ì•ˆí•¨)
+    BYTE MediaSign;             //15 0F8h  - ë©”ë””ì•„ì¢…ë¥˜
+    WORD SectorsPerFAT;         //16 0 (FAT32ì—ì„œëŠ” ì‚¬ìš©ì•ˆí•¨)
     WORD SectorsPerHead;        //18 63
     WORD HeadQty;               //1A 128
-    DWORD StartRtvSctNo;        //1C 63 - ÀÌ µå¶óÀÌºêÀÇ ½ÃÀÛ ¼½ÅÍ¹øÈ£(ÇÏµåµğ½ºÅ© ÀüÃ¼¸¦ ±âÁØ, Ã³À½Àº 0), ÀÌ ºÎÆ®·¹ÄÚµå¸¦ °¡¸®Å´
-    DWORD BigTotalSectors;      //20 3144897 - ÀÌ µå¶óÀÌºêÀÇ ÃÑ¼½ÅÍ¼ö (ÀÌ ºÎÆ®¼½ÅÍºÎÅÍ ...)
-    //¿©±âºÎÅÍ´Â FAT16°ú ¿ÏÀüÈ÷ ´Ù¸§
+    DWORD StartRtvSctNo;        //1C 63 - ì´ ë“œë¼ì´ë¸Œì˜ ì‹œì‘ ì„¹í„°ë²ˆí˜¸(í•˜ë“œë””ìŠ¤í¬ ì „ì²´ë¥¼ ê¸°ì¤€, ì²˜ìŒì€ 0), ì´ ë¶€íŠ¸ë ˆì½”ë“œë¥¼ ê°€ë¦¬í‚´
+    DWORD BigTotalSectors;      //20 3144897 - ì´ ë“œë¼ì´ë¸Œì˜ ì´ì„¹í„°ìˆ˜ (ì´ ë¶€íŠ¸ì„¹í„°ë¶€í„° ...)
+    //ì—¬ê¸°ë¶€í„°ëŠ” FAT16ê³¼ ì™„ì „íˆ ë‹¤ë¦„
     DWORD BigSctPerFAT;         //24 6475
-    BYTE ActiveFATNo;           //28 0 (0-15) - BPB±¸Á¶¿¡¼­´Â ¾Æ·¡¿Í WORD·Î BPB_ExtFlags·Î ¸í½Ã
+    BYTE ActiveFATNo;           //28 0 (0-15) - BPBêµ¬ì¡°ì—ì„œëŠ” ì•„ë˜ì™€ WORDë¡œ BPB_ExtFlagsë¡œ ëª…ì‹œ
     BYTE ExtFlagsHigh;          //29 0
-    WORD FS_Version;            //2A 0 - ÀÌ °ªÀÌ 0ÀÌ ¾Æ´Ï¸é ¿À·ùÃ³¸®
+    WORD FS_Version;            //2A 0 - ì´ ê°’ì´ 0ì´ ì•„ë‹ˆë©´ ì˜¤ë¥˜ì²˜ë¦¬
     DWORD RootDirClustNo;       //2C 2
     WORD FSInfoSctQty;          //30 1
     WORD BkUpBootSctOfs;        //32 6
     DWORD Reserved4;            //34 0
     DWORD Reserved5;            //38 0
     DWORD Reserved6;            //3C 0
-    //FAT16¿¡µµ ÀÖ¾úÁö¸¸ À§Ä¡°¡ ¹Ù²ñ
-    BYTE FS32PhyDiskNo;         //40 80h - ¹°¸®ÀûÀÎ µå¶óÀÌºê ¹øÈ£
+    //FAT16ì—ë„ ìˆì—ˆì§€ë§Œ ìœ„ì¹˜ê°€ ë°”ë€œ
+    BYTE FS32PhyDiskNo;         //40 80h - ë¬¼ë¦¬ì ì¸ ë“œë¼ì´ë¸Œ ë²ˆí˜¸
     BYTE FS32Unknown1;          //41 0
-    BYTE FS32ExtBootSign;       //42 29h - È®Àå ºÎÆ®·¹ÄÚ´õ »çÀÎ
+    BYTE FS32ExtBootSign;       //42 29h - í™•ì¥ ë¶€íŠ¸ë ˆì½”ë” ì‚¬ì¸
     DWORD FS32SerialNo;         //43 37231BF5h
     CHAR FS32VolumeLabel[11];   //47 'No Name    '
     CHAR FS32Sign[8];           //52 'FAT32   '
@@ -197,7 +197,7 @@ typedef struct _BPB_F32
 
 
 //-----------------------------------------------------------------------------
-//      DosFileTime Çü½ÄÀ¸·Î ¸®ÅÏ
+//      DosFileTime í˜•ì‹ìœ¼ë¡œ ë¦¬í„´
 //-----------------------------------------------------------------------------
 LOCAL(DWORD) SystemTimeToDosFileTime(CONST SYSTEMTIME *ST)
     {
@@ -210,7 +210,7 @@ LOCAL(DWORD) SystemTimeToDosFileTime(CONST SYSTEMTIME *ST)
 
 
 //-----------------------------------------------------------------------------
-//      JTIME½Ã°£À» DosFileTimeÀ¸·Î º¯È¯
+//      JTIMEì‹œê°„ì„ DosFileTimeìœ¼ë¡œ ë³€í™˜
 //-----------------------------------------------------------------------------
 LOCAL(DWORD) JTimeToDosDateTime(JTIME JTime)
     {
@@ -224,7 +224,7 @@ LOCAL(DWORD) JTimeToDosDateTime(JTIME JTime)
 
 
 //-----------------------------------------------------------------------------
-//      DosFileTimeÀ» JTIME½Ã°£À¸·Î º¯È¯
+//      DosFileTimeì„ JTIMEì‹œê°„ìœ¼ë¡œ ë³€í™˜
 //-----------------------------------------------------------------------------
 LOCAL(JTIME) DosFileTimeToJTime(DWORD DosTime)
     {
@@ -243,7 +243,7 @@ LOCAL(JTIME) DosFileTimeToJTime(DWORD DosTime)
 
 
 //-----------------------------------------------------------------------------
-//      ¸ÖÆ¼ ¾²·¹µå È¯°æ¿¡¼­ ÀçÁøÀÔÀ» ¸·±â À§ÇÑ ÇÔ¼ö
+//      ë©€í‹° ì“°ë ˆë“œ í™˜ê²½ì—ì„œ ì¬ì§„ì…ì„ ë§‰ê¸° ìœ„í•œ í•¨ìˆ˜
 //-----------------------------------------------------------------------------
 LOCAL(VOID) JFAT_Lock(CONST DISKCONTROLBLOCK *Dcb)
     {
@@ -255,7 +255,7 @@ LOCAL(VOID) JFAT_Lock(CONST DISKCONTROLBLOCK *Dcb)
 
 
 //-----------------------------------------------------------------------------
-//          LFN[·ÕÆÄÀÏ³×ÀÓ ½Ã½ºÅÛ¿¡¼­ ¾²´Â] Ã¼Å©½æÀ» ±¸ÇÕ´Ï´Ù
+//          LFN[ë¡±íŒŒì¼ë„¤ì„ ì‹œìŠ¤í…œì—ì„œ ì“°ëŠ”] ì²´í¬ì¸ì„ êµ¬í•©ë‹ˆë‹¤
 //-----------------------------------------------------------------------------
 LOCAL(VOID) JFAT_Unlock(CONST DISKCONTROLBLOCK *Dcb)
     {
@@ -267,7 +267,7 @@ LOCAL(VOID) JFAT_Unlock(CONST DISKCONTROLBLOCK *Dcb)
 
 
 //-----------------------------------------------------------------------------
-//          LFN[·ÕÆÄÀÏ³×ÀÓ ½Ã½ºÅÛ¿¡¼­ ¾²´Â] Ã¼Å©½æÀ» ±¸ÇÕ´Ï´Ù
+//          LFN[ë¡±íŒŒì¼ë„¤ì„ ì‹œìŠ¤í…œì—ì„œ ì“°ëŠ”] ì²´í¬ì¸ì„ êµ¬í•©ë‹ˆë‹¤
 //-----------------------------------------------------------------------------
 UINT WINAPI GetLfnChkSum(LPCBYTE lpMem, UINT Size)
     {
@@ -286,7 +286,7 @@ UINT WINAPI GetLfnChkSum(LPCBYTE lpMem, UINT Size)
 
 
 //-----------------------------------------------------------------------------
-//      ¹®ÀÚ¿­À» µÚÁıÀ½
+//      ë¬¸ìì—´ì„ ë’¤ì§‘ìŒ
 //-----------------------------------------------------------------------------
 VOID WINAPI ReverseString(LPSTR Buff, int Len)
     {
@@ -307,21 +307,21 @@ VOID WINAPI ReverseString(LPSTR Buff, int Len)
 
 
 //-----------------------------------------------------------------------------
-//          DirEntry¿¡¼­ LFNÀÇ ¹®ÀÚ¸¦ ²ôÁı¾î ³À´Ï´Ù
+//          DirEntryì—ì„œ LFNì˜ ë¬¸ìë¥¼ ë„ì§‘ì–´ ëƒ…ë‹ˆë‹¤
 //-----------------------------------------------------------------------------
 VOID WINAPI CollectLfn(DIRENTRY *DE, LPSTR Lfn, int BuffSize)
     {
     int Cha;
     LPCBYTE LfnOfs;
-    static CONST BYTE LfnCharPos[]={0x1E,0x1C,0x18,0x16,0x14,0x12,0x10,0x0E,9,7,5,3,1,0};   //¸ÇµÚ 0Àº ³¡ÀÌ¶ó´Â ÀÇ¹Ì
+    static CONST BYTE LfnCharPos[]={0x1E,0x1C,0x18,0x16,0x14,0x12,0x10,0x0E,9,7,5,3,1,0};   //ë§¨ë’¤ 0ì€ ëì´ë¼ëŠ” ì˜ë¯¸
 
     LfnOfs=LfnCharPos;
     for (;;)
         {
         if ((Cha=*LfnOfs++)==0) break;
         Cha=PeekW(DE->FileName+Cha);
-        if (Cha==0) continue;       //Lfn¿¡´Â ÆÄÀÏ¸í ¸ÇµÚ¿¡ \0±îÁö ÀúÀåÇÔ
-        if (Cha==0xFFFF) continue;  //Unicode 0xFFFF´Â ´õÀÌ»ó ¾øÀ½À» ÀÇ¹Ì
+        if (Cha==0) continue;       //Lfnì—ëŠ” íŒŒì¼ëª… ë§¨ë’¤ì— \0ê¹Œì§€ ì €ì¥í•¨
+        if (Cha==0xFFFF) continue;  //Unicode 0xFFFFëŠ” ë”ì´ìƒ ì—†ìŒì„ ì˜ë¯¸
         if (Cha<=0x7F)
             {
             if (BuffSize>1) {*Lfn++=Cha; BuffSize--;}
@@ -352,21 +352,21 @@ VOID WINAPI CollectLfn(DIRENTRY *DE, LPSTR Lfn, int BuffSize)
 
 
 //-----------------------------------------------------------------------------
-//      ÅäÅ»Ä¿¸à´õ·Î ÀÌ¹ÌÁö ¾È¿¡ ÆÄÀÏÀ» ³ÖÀº °æ¿ì ºñÈ£È¯À¸·Î LFNÀÌ ¸¸µé¾îÁü
+//      í† íƒˆì»¤ë©˜ë”ë¡œ ì´ë¯¸ì§€ ì•ˆì— íŒŒì¼ì„ ë„£ì€ ê²½ìš° ë¹„í˜¸í™˜ìœ¼ë¡œ LFNì´ ë§Œë“¤ì–´ì§
 //-----------------------------------------------------------------------------
 VOID WINAPI CollectLfnII(DIRENTRY *DE, LPSTR Lfn, int BuffSize)
     {
     int Cha;
     LPCBYTE LfnOfs;
-    static CONST BYTE LfnCharPos[]={1,3,5,7,9,0x0E,0x10,0x12,0x14,0x16,0x18,0x1C,0x1E,0};   //¸ÇµÚ 0Àº ³¡ÀÌ¶ó´Â ÀÇ¹Ì
+    static CONST BYTE LfnCharPos[]={1,3,5,7,9,0x0E,0x10,0x12,0x14,0x16,0x18,0x1C,0x1E,0};   //ë§¨ë’¤ 0ì€ ëì´ë¼ëŠ” ì˜ë¯¸
 
     LfnOfs=LfnCharPos;
     for (;;)
         {
         if ((Cha=*LfnOfs++)==0) break;
         Cha=PeekW(DE->FileName+Cha);
-        if (Cha==0) break;              //Lfn¿¡´Â ÆÄÀÏ¸í ¸ÇµÚ¿¡ \0±îÁö ÀúÀåÇÔ
-        if (Cha==0xFFFF) break;         //Unicode 0xFFFF´Â ´õÀÌ»ó ¾øÀ½À» ÀÇ¹Ì
+        if (Cha==0) break;              //Lfnì—ëŠ” íŒŒì¼ëª… ë§¨ë’¤ì— \0ê¹Œì§€ ì €ì¥í•¨
+        if (Cha==0xFFFF) break;         //Unicode 0xFFFFëŠ” ë”ì´ìƒ ì—†ìŒì„ ì˜ë¯¸
         if (BuffSize>1) {*Lfn++=Cha; BuffSize--;}
         }
     if (BuffSize>0) *Lfn=0;
@@ -376,7 +376,7 @@ VOID WINAPI CollectLfnII(DIRENTRY *DE, LPSTR Lfn, int BuffSize)
 
 
 //-----------------------------------------------------------------------------
-//          °ø¹éÀ¸·Î Ã¤¿öÁø 83ÆÄÀÏ¸íÀ» º¸Åë ÆÄÀÏ¸íÀ¸·Î º¯È¯
+//          ê³µë°±ìœ¼ë¡œ ì±„ì›Œì§„ 83íŒŒì¼ëª…ì„ ë³´í†µ íŒŒì¼ëª…ìœ¼ë¡œ ë³€í™˜
 //-----------------------------------------------------------------------------
 VOID WINAPI Conv83toFName(LPSTR FileName, LPCBYTE _83FName)
     {
@@ -399,7 +399,7 @@ VOID WINAPI Conv83toFName(LPSTR FileName, LPCBYTE _83FName)
 
 
 //-----------------------------------------------------------------------------
-//          ÆÄÀÏ¸íÀ» °ø¹éÀ¸·Î Ã¤¿öÁø 83ÆÄÀÏ¸íÀ¸·Î º¯È¯
+//          íŒŒì¼ëª…ì„ ê³µë°±ìœ¼ë¡œ ì±„ì›Œì§„ 83íŒŒì¼ëª…ìœ¼ë¡œ ë³€í™˜
 //-----------------------------------------------------------------------------
 VOID WINAPI ConvFileNameTo83Name(LPBYTE _83FName, LPCSTR FileName)
     {
@@ -425,7 +425,7 @@ VOID WINAPI ConvFileNameTo83Name(LPBYTE _83FName, LPCSTR FileName)
 
 
 //-----------------------------------------------------------------------------
-//          FullPath¿¡¼­ '/'ÀÌ ³ª¿Ã ¶§±îÁö Æú´õ¸íÀ» º¹»çÇØÁÜ
+//          FullPathì—ì„œ '/'ì´ ë‚˜ì˜¬ ë•Œê¹Œì§€ í´ë”ëª…ì„ ë³µì‚¬í•´ì¤Œ
 //-----------------------------------------------------------------------------
 LPCSTR WINAPI CatchFileName(LPCSTR lp, LPSTR Buff, int BuffSize)
     {
@@ -445,7 +445,7 @@ LPCSTR WINAPI CatchFileName(LPCSTR lp, LPSTR Buff, int BuffSize)
 
 
 //-----------------------------------------------------------------------------
-//          Disk¸¦ ¹ÙÀÌÆ® ´ÜÀ§·Î ÀĞ±â/¾²±â
+//          Diskë¥¼ ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ ì½ê¸°/ì“°ê¸°
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) AccessStorageBytes(CONST DISKCONTROLBLOCK *Dcb, int Access, DWORD SctNo, UINT OfsInSct, LPBYTE Buff, int AccBytes)
     {
@@ -471,14 +471,14 @@ LOCAL(BOOL) AccessStorageBytes(CONST DISKCONTROLBLOCK *Dcb, int Access, DWORD Sc
             }
         }
     if (Rslt==FALSE) Printf("%sStorageBytes(SDAddr=%X, OfsInSct=%X, AccBytes=%u) Error" CRLF, Access==DEVICE_READ ? "Read":"Write", SctNo, OfsInSct, AccBytes);
-    (VOID)Lun;      //STORAGE_Read()¸¦ #defineÀ¸·Î ¿¬°áÇÒ ¶§ LunÀÌ ¾²ÀÌ±â ¾ÊÀ¸¸é °æ°í°¡ ¹ß»ıÇÔ
+    (VOID)Lun;      //STORAGE_Read()ë¥¼ #defineìœ¼ë¡œ ì—°ê²°í•  ë•Œ Lunì´ ì“°ì´ê¸° ì•Šìœ¼ë©´ ê²½ê³ ê°€ ë°œìƒí•¨
     return Rslt;
     }
 
 
 
 //-----------------------------------------------------------------------------
-//      Å¬·¯½ºÅÍ ¹øÈ£¸¦ ¼½ÅÍ¹øÈ£·Î º¯È¯
+//      í´ëŸ¬ìŠ¤í„° ë²ˆí˜¸ë¥¼ ì„¹í„°ë²ˆí˜¸ë¡œ ë³€í™˜
 //-----------------------------------------------------------------------------
 LOCAL(DWORD) ClusterNoToSectorNo(CONST DISKCONTROLBLOCK *Dcb, DWORD ClusterNo)
     {
@@ -488,7 +488,7 @@ LOCAL(DWORD) ClusterNoToSectorNo(CONST DISKCONTROLBLOCK *Dcb, DWORD ClusterNo)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø Å¬·¯½ºÅÍ ¾È¿¡¼­ Data¸¦ ÀĞ°Å³ª ¾¸
+//      ì£¼ì–´ì§„ í´ëŸ¬ìŠ¤í„° ì•ˆì—ì„œ Dataë¥¼ ì½ê±°ë‚˜ ì”€
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) AccessCluster(CONST DISKCONTROLBLOCK *Dcb, int Access, DWORD ClusterNo, UINT OfsInCluster, LPBYTE Buff, UINT ToAccBytes)
     {
@@ -516,7 +516,7 @@ LOCAL(BOOL) AccessCluster(CONST DISKCONTROLBLOCK *Dcb, int Access, DWORD Cluster
 
 
 //-----------------------------------------------------------------------------
-//      º¯°æµÈ FATÀÌ¸é ±â·ÏÇÔ
+//      ë³€ê²½ëœ FATì´ë©´ ê¸°ë¡í•¨
 //-----------------------------------------------------------------------------
 LOCAL(VOID) FlushChcheBuff(DISKCONTROLBLOCK *Dcb)
     {
@@ -535,7 +535,7 @@ LOCAL(VOID) FlushChcheBuff(DISKCONTROLBLOCK *Dcb)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø FATÀÇ ´ÙÀ½ ¿¬°áµÈ FATÀ» ±¸ÇÔ (¿£Æ®¸®ÀÇ ³¡ÀÌ¸é TRUE ¸®ÅÏ)
+//      ì£¼ì–´ì§„ FATì˜ ë‹¤ìŒ ì—°ê²°ëœ FATì„ êµ¬í•¨ (ì—”íŠ¸ë¦¬ì˜ ëì´ë©´ TRUE ë¦¬í„´)
 //
 //  FAT12 FAT Entry
 //
@@ -604,8 +604,8 @@ LOCAL(BOOL) GetNextCluster(DISKCONTROLBLOCK *Dcb, INOUT DWORD *lpFatEntry)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø FATÀÇ ´ÙÀ½ ¿¬°áµÈ FATÀ» ±â·ÏÇÔ
-//              ¿£Æ®¸®ÀÇ ³¡ÀÌ¸é TRUE¸®ÅÏ
+//      ì£¼ì–´ì§„ FATì˜ ë‹¤ìŒ ì—°ê²°ëœ FATì„ ê¸°ë¡í•¨
+//              ì—”íŠ¸ë¦¬ì˜ ëì´ë©´ TRUEë¦¬í„´
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) SetFatEntry(DISKCONTROLBLOCK *Dcb, DWORD CurrEntry, DWORD NewEntry, DWORD *lpNextEntry)
     {
@@ -656,20 +656,20 @@ LOCAL(BOOL) SetFatEntry(DISKCONTROLBLOCK *Dcb, DWORD CurrEntry, DWORD NewEntry, 
 
 typedef struct _FILENAMEFINDRESULT
     {
-    UINT LfnFirstLocSctNo;      //Ã¹¹øÂ° LFNÀ» ¹ß°ßÇÑ ¼½ÅÍ¹øÈ£, FindSectorNo¿Í ´Ù¸¦ ¼öµµ ÀÖÀ½, LFNÀ» ¾È°¡Áø ÆÄÀÏÀÎ °æ¿ì 0ÀÓ
-    UINT LfnFirstLocSctOfs;     //Ã¹¹øÂ° LFNÀ» ¹ß°ßÇÑ ¼½ÅÍ³»ÀÇ Offset
-    UINT FindSectorNo;          //Ã£Àº ÆÄÀÏ¸íÀÌ ÀÖ´Â ¼½ÅÍ¹øÈ£
-    UINT FindSectorOfs;         //Ã£Àº ÆÄÀÏ¸í ¼½ÅÍ ³» Offset
-    UINT LfnID;                 //LfnÆÄÀÏ¸íÀ» »ı¼ºÇÒ ¶§ ShortNameÀ» ¸¸µé Àç·á
+    UINT LfnFirstLocSctNo;      //ì²«ë²ˆì§¸ LFNì„ ë°œê²¬í•œ ì„¹í„°ë²ˆí˜¸, FindSectorNoì™€ ë‹¤ë¥¼ ìˆ˜ë„ ìˆìŒ, LFNì„ ì•ˆê°€ì§„ íŒŒì¼ì¸ ê²½ìš° 0ì„
+    UINT LfnFirstLocSctOfs;     //ì²«ë²ˆì§¸ LFNì„ ë°œê²¬í•œ ì„¹í„°ë‚´ì˜ Offset
+    UINT FindSectorNo;          //ì°¾ì€ íŒŒì¼ëª…ì´ ìˆëŠ” ì„¹í„°ë²ˆí˜¸
+    UINT FindSectorOfs;         //ì°¾ì€ íŒŒì¼ëª… ì„¹í„° ë‚´ Offset
+    UINT LfnID;                 //LfníŒŒì¼ëª…ì„ ìƒì„±í•  ë•Œ ShortNameì„ ë§Œë“¤ ì¬ë£Œ
     } FILENAMEFINDRESULT;
 
 
 
 
 //-----------------------------------------------------------------------------
-//      Directory Entry¸¦ ¿¡¼­ ÆÄÀÏ¸íÀ» Ã£À½
+//      Directory Entryë¥¼ ì—ì„œ íŒŒì¼ëª…ì„ ì°¾ìŒ
 //
-//      'Abcdefghijklmnopqrstuvwxyz.123'ÀÇ Entry ¿¹
+//      'Abcdefghijklmnopqrstuvwxyz.123'ì˜ Entry ì˜ˆ
 //
 // 43 2E 00 31 00 32 00 33 - 00 00 00 0F 00 2A FF FF C. 1 2 3     *
 // FF FF FF FF FF FF FF FF - FF FF 00 00 FF FF FF FF
@@ -721,13 +721,13 @@ LOCAL(DIRENTRY*) SearchFileName(DISKCONTROLBLOCK *Dcb, LPCSTR ToFindFN, INOUT DW
                 if (FirstCha==DIRENTRY_ERASE) goto ClearLfnCont;
                 if (DE->FileAttr==FILE_ATTRIBUTE_LFN)
                     {
-                    #if SUPPORT_UTF8!=0                 //ÅäÅ»Ä¿¸à´õ·Î DiskImage¾È¿¡ ÆÄÀÏÀ» ³ÖÀº °æ¿ì
-                    if (FirstCha & 0x40)                //Ã¹ Lfn¿£Æ®¸®
+                    #if SUPPORT_UTF8!=0                 //í† íƒˆì»¤ë©˜ë”ë¡œ DiskImageì•ˆì— íŒŒì¼ì„ ë„£ì€ ê²½ìš°
+                    if (FirstCha & 0x40)                //ì²« Lfnì—”íŠ¸ë¦¬
                         {
                         FI->LfnFirstLocSctNo=SctNo;
                         FI->LfnFirstLocSctOfs=SctOfs;
 
-                        LfnSeqNo=FirstCha & 0x1F;       //´ÙÀ½ Lfn¿£Æ®¸®ÀÇ Seq¹øÈ£
+                        LfnSeqNo=FirstCha & 0x1F;       //ë‹¤ìŒ Lfnì—”íŠ¸ë¦¬ì˜ Seqë²ˆí˜¸
                         LfnSum=DE->LfnChkSum;
                         Lfn[0]=0;
                         }
@@ -755,7 +755,7 @@ LOCAL(DIRENTRY*) SearchFileName(DISKCONTROLBLOCK *Dcb, LPCSTR ToFindFN, INOUT DW
                     if (ToFindFN[0]=='~' && ToFindFN[1]=='*')
                         {
                         if (ShotFName[0]=='~' && lstrcmpi(GetFileExtNameLoc(ShotFName), lpExt)==0)
-                            FI->LfnID=GetMax(FI->LfnID, AtoN(ShotFName+1, NULL));   //AtoI´Â ¾Õ¿¡ 0ÀÌ Æ÷ÇÔµÈ ¼ö´Â 8Áø¼ö·Î º½
+                            FI->LfnID=GetMax(FI->LfnID, AtoN(ShotFName+1, NULL));   //AtoIëŠ” ì•ì— 0ì´ í¬í•¨ëœ ìˆ˜ëŠ” 8ì§„ìˆ˜ë¡œ ë´„
                         }
                     else if (lstrcmpi(Lfn, ToFindFN)==0 || lstrcmpi(ShotFName, ToFindFN)==0)
                         {
@@ -784,7 +784,7 @@ LOCAL(DIRENTRY*) SearchFileName(DISKCONTROLBLOCK *Dcb, LPCSTR ToFindFN, INOUT DW
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏÀÌ³ª Æú´õ¸¦ ¿ÀÇÂÇÕ´Ï´Ù (¸®ÅÏ°ªÀº SctBuff ³»ºÎÀÇ À§Ä¡ÀÓ)
+//      íŒŒì¼ì´ë‚˜ í´ë”ë¥¼ ì˜¤í”ˆí•©ë‹ˆë‹¤ (ë¦¬í„´ê°’ì€ SctBuff ë‚´ë¶€ì˜ ìœ„ì¹˜ì„)
 //-----------------------------------------------------------------------------
 #define OPENDIR_DIR     0
 #define OPENDIR_FILE    1
@@ -794,7 +794,7 @@ LOCAL(DIRENTRY*) OpenDir(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, LPBYTE SctBuff,
     DIRENTRY *DE;
     CHAR  FName[LFN_MAXLEN];
 
-    DirCluster=0;   //·çÆ® Å¬·¯½ºÅÍ
+    DirCluster=0;   //ë£¨íŠ¸ í´ëŸ¬ìŠ¤í„°
     for (;;)
         {
         FullPath=CatchFileName(FullPath, FName, LFN_MAXLEN);
@@ -821,7 +821,7 @@ LOCAL(DIRENTRY*) OpenDir(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, LPBYTE SctBuff,
 
 
 //-----------------------------------------------------------------------------
-//      DIRENTRY ´ÙÀ½ À§Ä¡·Î ÀÌµ¿ÇÔ
+//      DIRENTRY ë‹¤ìŒ ìœ„ì¹˜ë¡œ ì´ë™í•¨
 //-----------------------------------------------------------------------------
 LOCAL(VOID) MoveNextDirEntry(DISKCONTROLBLOCK *Dcb, WIN32_FIND_DATA *WFD)
     {
@@ -847,7 +847,7 @@ LOCAL(VOID) MoveNextDirEntry(DISKCONTROLBLOCK *Dcb, WIN32_FIND_DATA *WFD)
 
 
 //-----------------------------------------------------------------------------
-//      Directory Entry¸¦ ¿¡¼­ ÆÄÀÏ¸íÀ» Ã£À½
+//      Directory Entryë¥¼ ì—ì„œ íŒŒì¼ëª…ì„ ì°¾ìŒ
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) L_FindNextFile(DISKCONTROLBLOCK *Dcb, WIN32_FIND_DATA *WFD)
     {
@@ -869,9 +869,9 @@ LOCAL(BOOL) L_FindNextFile(DISKCONTROLBLOCK *Dcb, WIN32_FIND_DATA *WFD)
         if (DE->FileAttr==FILE_ATTRIBUTE_LFN)
             {
             #if SUPPORT_UTF8!=0
-            if (FirstCha & 0x40)                //Ã¹ Lfn¿£Æ®¸®
+            if (FirstCha & 0x40)                //ì²« Lfnì—”íŠ¸ë¦¬
                 {
-                LfnSeqNo=FirstCha & 0x1F;       //´ÙÀ½ Lfn¿£Æ®¸®ÀÇ Seq¹øÈ£
+                LfnSeqNo=FirstCha & 0x1F;       //ë‹¤ìŒ Lfnì—”íŠ¸ë¦¬ì˜ Seqë²ˆí˜¸
                 LfnSum=DE->LfnChkSum;
                 WFD->cFileName[0]=0;
                 }
@@ -882,7 +882,7 @@ LOCAL(BOOL) L_FindNextFile(DISKCONTROLBLOCK *Dcb, WIN32_FIND_DATA *WFD)
             I=lstrlen(WFD->cFileName);
             CollectLfn(DE, WFD->cFileName+I, LFN_MAXLEN-I);
             LfnSeqNo--;
-            #else                               //ÅäÅ»Ä¿¸à´õ·Î DiskImage¾È¿¡ ÆÄÀÏÀ» ³ÖÀº °æ¿ì
+            #else                               //í† íƒˆì»¤ë©˜ë”ë¡œ DiskImageì•ˆì— íŒŒì¼ì„ ë„£ì€ ê²½ìš°
             I=lstrlen(WFD->cFileName);
             CollectLfnII(DE, WFD->cFileName+I, LFN_MAXLEN-I);
             #endif
@@ -903,7 +903,7 @@ LOCAL(BOOL) L_FindNextFile(DISKCONTROLBLOCK *Dcb, WIN32_FIND_DATA *WFD)
                     if (ChkWildcardFileName(WFD->cAlternateFileName, WFD->Wildcard)==FALSE &&
                         ChkWildcardFileName(WFD->cFileName, WFD->Wildcard)==FALSE) {WFD->cAlternateFileName[0]=0; goto ClearLfnCont;}
                     }
-                if (WFD->cFileName[0]==0) lstrcpy(WFD->cFileName, WFD->cAlternateFileName); //8.3ÆÄÀÏ¸í¸¸ Á¸ÀçÇÏ´Â °æ¿ì
+                if (WFD->cFileName[0]==0) lstrcpy(WFD->cFileName, WFD->cAlternateFileName); //8.3íŒŒì¼ëª…ë§Œ ì¡´ì¬í•˜ëŠ” ê²½ìš°
                 WFD->ftLastWriteTime=DosFileTimeToJTime((DE->LastModiDate<<16)|DE->LastModiTime);
                 WFD->dwFileAttributes=DE->FileAttr;
                 WFD->nFileSizeLow=DE->FileSize;
@@ -940,7 +940,7 @@ BOOL WINAPI JFAT_FindNextFile(WIN32_FIND_DATA *WFD)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø Path¿¡ ÇØ´çÇÏ´Â Dcb¸¦ ¸®ÅÏ
+//      ì£¼ì–´ì§„ Pathì— í•´ë‹¹í•˜ëŠ” Dcbë¥¼ ë¦¬í„´
 //-----------------------------------------------------------------------------
 LOCAL(DISKCONTROLBLOCK*) CheckLunSpace(UINT Lun)
     {
@@ -966,7 +966,7 @@ LOCAL(DISKCONTROLBLOCK*) CheckLunSpace(UINT Lun)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø Path¿¡ ÇØ´çÇÏ´Â Dcb¸¦ ¸®ÅÏ
+//      ì£¼ì–´ì§„ Pathì— í•´ë‹¹í•˜ëŠ” Dcbë¥¼ ë¦¬í„´
 //-----------------------------------------------------------------------------
 LOCAL(DISKCONTROLBLOCK*) GetDCB(LPCSTR *lpFullPath, BOOL ChkNoNameFg, BOOL CheckFormat)
     {
@@ -982,7 +982,7 @@ LOCAL(DISKCONTROLBLOCK*) GetDCB(LPCSTR *lpFullPath, BOOL ChkNoNameFg, BOOL Check
         FullPath+=2;
         }
 
-    if (FullPath[0]=='/') FullPath++;   //Root ±âÈ£ Skip
+    if (FullPath[0]=='/') FullPath++;   //Root ê¸°í˜¸ Skip
     if (ChkNoNameFg && FullPath[0]==0) {Printf("Empty File Name" CRLF); goto ProcExit;}
     if ((Dcb=CheckLunSpace(Lun))==NULL) goto ProcExit;
     if (Dcb->DiskSectorQty==0 || (CheckFormat && Dcb->ClusterStartSctNo==0))
@@ -1000,7 +1000,7 @@ LOCAL(DISKCONTROLBLOCK*) GetDCB(LPCSTR *lpFullPath, BOOL ChkNoNameFg, BOOL Check
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø ÆúÅÍ¾È¿¡ Ã¹¹øÂ° ÆÄÀÏÀ» Ã£¾ÆÁÜ
+//      ì£¼ì–´ì§„ í´í„°ì•ˆì— ì²«ë²ˆì§¸ íŒŒì¼ì„ ì°¾ì•„ì¤Œ
 //-----------------------------------------------------------------------------
 WIN32_FIND_DATA* WINAPI JFAT_FindFirstFile(LPCSTR FullPath)
     {
@@ -1042,7 +1042,7 @@ WIN32_FIND_DATA* WINAPI JFAT_FindFirstFile(LPCSTR FullPath)
 
 
 //-----------------------------------------------------------------------------
-//      »ç¿ë¾ÈÇÏ´Â FCB ¹øÈ£¸¦ ¸®ÅÏÇÕ
+//      ì‚¬ìš©ì•ˆí•˜ëŠ” FCB ë²ˆí˜¸ë¥¼ ë¦¬í„´í•©
 //-----------------------------------------------------------------------------
 LOCAL(HFILE) GetNoUseFCB(VOID)
     {
@@ -1052,7 +1052,7 @@ LOCAL(HFILE) GetNoUseFCB(VOID)
     if (I<OPENFILEQTY) ZeroMem(FileCtrlBlock+I, sizeof(FILECONTROLBLOCK));
     else{
         Printf("Too many files are open" CRLF);
-        I=-1;   //ÆÄÀÏÇÚµéºÎÁ·
+        I=-1;   //íŒŒì¼í•¸ë“¤ë¶€ì¡±
         }
     return I;
     }
@@ -1061,7 +1061,7 @@ LOCAL(HFILE) GetNoUseFCB(VOID)
 
 
 //-----------------------------------------------------------------------------
-//      FullPathÀÇ À§Ä¡¸¦ Ã£À½
+//      FullPathì˜ ìœ„ì¹˜ë¥¼ ì°¾ìŒ
 //-----------------------------------------------------------------------------
 LOCAL(int) L_lopen(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, int OpenMode)
     {
@@ -1070,9 +1070,9 @@ LOCAL(int) L_lopen(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, int OpenMode)
     FILECONTROLBLOCK *FCB;
     FILENAMEFINDRESULT FI;
 
-    if ((I=GetNoUseFCB())<0) goto ProcExit;      //ÆÄÀÏÇÚµéºÎÁ·
+    if ((I=GetNoUseFCB())<0) goto ProcExit;      //íŒŒì¼í•¸ë“¤ë¶€ì¡±
     FCB=FileCtrlBlock+I;
-    if ((DE=OpenDir(Dcb, FullPath, Dcb->SctBuffer, &FI, OPENDIR_FILE))==NULL) goto ProcExit;    //DE´Â SctBuff³»ºÎ À§Ä¡ÀÓ
+    if ((DE=OpenDir(Dcb, FullPath, Dcb->SctBuffer, &FI, OPENDIR_FILE))==NULL) goto ProcExit;    //DEëŠ” SctBuffë‚´ë¶€ ìœ„ì¹˜ì„
     if (DE->FileAttr & FILE_ATTRIBUTE_DIRECTORY) goto ProcExit;
     FCB->Dcb=Dcb;
     FCB->OpenMode=OpenMode;
@@ -1093,7 +1093,7 @@ LOCAL(int) L_lopen(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, int OpenMode)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø ÆÄÀÏÀÇ Attribute¸¦ ¸®ÅÏ
+//      ì£¼ì–´ì§„ íŒŒì¼ì˜ Attributeë¥¼ ë¦¬í„´
 //-----------------------------------------------------------------------------
 DWORD WINAPI JFAT_GetFileAttributes(LPCSTR FullPath)
     {
@@ -1104,7 +1104,7 @@ DWORD WINAPI JFAT_GetFileAttributes(LPCSTR FullPath)
 
     if ((Dcb=GetDCB(&FullPath, TRUE, TRUE))==NULL) goto ProcExit;
     JFAT_Lock(Dcb);
-    if ((DE=OpenDir(Dcb, FullPath, Dcb->SctBuffer, &FI, OPENDIR_FILE))!=NULL)   //DE´Â SctBuff³»ºÎ À§Ä¡ÀÓ
+    if ((DE=OpenDir(Dcb, FullPath, Dcb->SctBuffer, &FI, OPENDIR_FILE))!=NULL)   //DEëŠ” SctBuffë‚´ë¶€ ìœ„ì¹˜ì„
         FileAttr=DE->FileAttr;
 
     ProcExit:
@@ -1116,7 +1116,7 @@ DWORD WINAPI JFAT_GetFileAttributes(LPCSTR FullPath)
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö ¾Ë·ÁÁÜ
+//      íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ ì•Œë ¤ì¤Œ
 //-----------------------------------------------------------------------------
 BOOL WINAPI IsExistFile(LPCSTR Path)
     {
@@ -1134,7 +1134,7 @@ BOOL WINAPI IsExistFile(LPCSTR Path)
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏ ¿ÀÇÂ
+//      íŒŒì¼ ì˜¤í”ˆ
 //-----------------------------------------------------------------------------
 int WINAPI JFAT_Open(LPCSTR FullPath, int OpenMode)
     {
@@ -1155,7 +1155,7 @@ int WINAPI JFAT_Open(LPCSTR FullPath, int OpenMode)
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏ À§Ä¡ ÀÌµ¿
+//      íŒŒì¼ ìœ„ì¹˜ ì´ë™
 //-----------------------------------------------------------------------------
 LONG WINAPI JFAT_Seek(HFILE hFile, LONG Pos, int Origin)
     {
@@ -1185,13 +1185,13 @@ LONG WINAPI JFAT_Seek(HFILE hFile, LONG Pos, int Origin)
     NewClustIdx=(FCB->FilePointer=NewPos)/ClustBytes;
 
     if (OrgClustIdx!=NewClustIdx)
-        {   //»õ À§Ä¡¸¦ Æ÷ÇÔÇÑ Å¬·¯½ºÅÍ ¹øÈ£¸¦ ±¸ÇØ³õÀ½
+        {   //ìƒˆ ìœ„ì¹˜ë¥¼ í¬í•¨í•œ í´ëŸ¬ìŠ¤í„° ë²ˆí˜¸ë¥¼ êµ¬í•´ë†“ìŒ
         FCB->AccCluster=FCB->StartCluster;
         for (I=0; I<NewPos; I+=ClustBytes)
             {
             if (NewPos<I+ClustBytes) break;
             FCB->PrevAccCluster=FCB->AccCluster;
-            if (GetNextCluster(Dcb, &FCB->AccCluster)!=0) break;                //ÆÄÀÏ ³¡ÀÌ¸é
+            if (GetNextCluster(Dcb, &FCB->AccCluster)!=0) break;                //íŒŒì¼ ëì´ë©´
             }
         }
 
@@ -1203,7 +1203,7 @@ LONG WINAPI JFAT_Seek(HFILE hFile, LONG Pos, int Origin)
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏ ÀĞ±â
+//      íŒŒì¼ ì½ê¸°
 //-----------------------------------------------------------------------------
 LONG WINAPI JFAT_Read(HFILE hFile, LPVOID Buff, UINT ReadByteSize)
     {
@@ -1244,12 +1244,12 @@ LONG WINAPI JFAT_Read(HFILE hFile, LPVOID Buff, UINT ReadByteSize)
             if (FCB->FilePointer % ClustBytes==0)
                 {
                 FCB->PrevAccCluster=FCB->AccCluster;
-                GetNextCluster(Dcb, &FCB->AccCluster);                          //´ÙÀ½Å¬·¯½ºÅÍ ÀĞÀ» À§Ä¡·Î
+                GetNextCluster(Dcb, &FCB->AccCluster);                          //ë‹¤ìŒí´ëŸ¬ìŠ¤í„° ì½ì„ ìœ„ì¹˜ë¡œ
                 }
             break;
             }
         FCB->PrevAccCluster=FCB->AccCluster;
-        if (GetNextCluster(Dcb, &FCB->AccCluster)!=0) break;                    //FAT°¡ ±úÁø°æ¿ìÀÓ
+        if (GetNextCluster(Dcb, &FCB->AccCluster)!=0) break;                    //FATê°€ ê¹¨ì§„ê²½ìš°ì„
         OfsInCluster=0;
         }
 
@@ -1262,7 +1262,7 @@ LONG WINAPI JFAT_Read(HFILE hFile, LPVOID Buff, UINT ReadByteSize)
 
 
 //-----------------------------------------------------------------------------
-//      µŞºÎºĞ ¾È¾²´Â ¿µ¿ªÀÇ ½ÃÀÛÀ» Ã£¾Æ³¿ (¸®ÅÏ°ªÀº »ç¿ë¾ÈÇÑ Å¬·¯½ºÅÍ ¼öÀÓ)
+//      ë’·ë¶€ë¶„ ì•ˆì“°ëŠ” ì˜ì—­ì˜ ì‹œì‘ì„ ì°¾ì•„ëƒ„ (ë¦¬í„´ê°’ì€ ì‚¬ìš©ì•ˆí•œ í´ëŸ¬ìŠ¤í„° ìˆ˜ì„)
 //-----------------------------------------------------------------------------
 LOCAL(DWORD) FindLastFreeClustNo(DISKCONTROLBLOCK *Dcb)
     {
@@ -1287,7 +1287,7 @@ LOCAL(DWORD) FindLastFreeClustNo(DISKCONTROLBLOCK *Dcb)
 
 
 //-----------------------------------------------------------------------------
-//      ºó Å¬·¯½ºÅÍ ÇÏ³ª¸¦ Ã£¾ÆÁÜ (ºó Å¬·¯½ºÅÍ°¡ ¾øÀ¸¸é 0¸®ÅÏ)
+//      ë¹ˆ í´ëŸ¬ìŠ¤í„° í•˜ë‚˜ë¥¼ ì°¾ì•„ì¤Œ (ë¹ˆ í´ëŸ¬ìŠ¤í„°ê°€ ì—†ìœ¼ë©´ 0ë¦¬í„´)
 //-----------------------------------------------------------------------------
 LOCAL(DWORD) AllocFatOne(DISKCONTROLBLOCK *Dcb)
     {
@@ -1331,7 +1331,7 @@ LOCAL(DWORD) AllocFatOne(DISKCONTROLBLOCK *Dcb)
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏ ¾²±â
+//      íŒŒì¼ ì“°ê¸°
 //-----------------------------------------------------------------------------
 LONG WINAPI JFAT_Write(HFILE hFile, LPCVOID Buff, UINT WriteByteSize)
     {
@@ -1356,7 +1356,7 @@ LONG WINAPI JFAT_Write(HFILE hFile, LPCVOID Buff, UINT WriteByteSize)
     OfsInCluster=FCB->FilePointer % ClustBytes;
     for (;;)
         {
-        if (FCB->AccCluster<2 || FCB->AccCluster==Eof)      //0¹ÙÀÌÆ® ÆÄÀÏÀÌ°Å³ª EofÀÎ °æ¿ì
+        if (FCB->AccCluster<2 || FCB->AccCluster==Eof)      //0ë°”ì´íŠ¸ íŒŒì¼ì´ê±°ë‚˜ Eofì¸ ê²½ìš°
             {
             if ((NewEntry=AllocFatOne(Dcb))==0) goto ProcExit;
             if (FCB->StartCluster==0) FCB->StartCluster=NewEntry;
@@ -1377,7 +1377,7 @@ LONG WINAPI JFAT_Write(HFILE hFile, LPCVOID Buff, UINT WriteByteSize)
             if (FCB->FilePointer % ClustBytes==0)
                 {
                 FCB->PrevAccCluster=FCB->AccCluster;
-                GetNextCluster(Dcb, &FCB->AccCluster);  //´ÙÀ½Å¬·¯½ºÅÍ ÀĞÀ» À§Ä¡·Î
+                GetNextCluster(Dcb, &FCB->AccCluster);  //ë‹¤ìŒí´ëŸ¬ìŠ¤í„° ì½ì„ ìœ„ì¹˜ë¡œ
                 }
             break;
             }
@@ -1461,7 +1461,7 @@ VOID WINAPI JFAT_Close(HFILE hFile)
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏÀÇ ³¯Â¥ ½Ã°£ ¼³Á¤
+//      íŒŒì¼ì˜ ë‚ ì§œ ì‹œê°„ ì„¤ì •
 //-----------------------------------------------------------------------------
 BOOL WINAPI JFAT_SetFileTime(HFILE hFile, JTIME CreationTime, JTIME LastAccessTime, JTIME LastWriteTime)
     {
@@ -1518,7 +1518,7 @@ BOOL WINAPI JFAT_SetFileTime(HFILE hFile, JTIME CreationTime, JTIME LastAccessTi
 
 
 //-----------------------------------------------------------------------------
-//      FAT FileSystemÀÎÁö È®ÀÎÇÔ
+//      FAT FileSystemì¸ì§€ í™•ì¸í•¨
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) IsFatFileSystem(BPB_F32 *BPB)
     {
@@ -1531,17 +1531,17 @@ LOCAL(BOOL) IsFatFileSystem(BPB_F32 *BPB)
 
 
 //-----------------------------------------------------------------------------
-//      ºÒ·ıÀÇ Á¤º¸¸¦ ÀĞ¾î ³õÀ½
+//      ë¶ˆë¥¨ì˜ ì •ë³´ë¥¼ ì½ì–´ ë†“ìŒ
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) ReadVolID(DISKCONTROLBLOCK *Dcb)
     {
     int  Rslt=FALSE;
-    UINT FatScts, RootDirScts, TotalSectors;                                    //RootDirScts: FAT16¿¡¼­ ·çÆ®µğ·ºÅä¸®ÀÇ ¼½ÅÍ¼ö
+    UINT FatScts, RootDirScts, TotalSectors;                                    //RootDirScts: FAT16ì—ì„œ ë£¨íŠ¸ë””ë ‰í† ë¦¬ì˜ ì„¹í„°ìˆ˜
     BPB_F32 *BPB;
 
     Dcb->VolumeStartSctNo=0;
     BPB=(BPB_F32*)Dcb->SctBuffer;
-    STORAGE_Read(Dcb->Lun, (LPBYTE)BPB, 0, 1);                                  //MBRÀÏ ¼ö ÀÖÀ½
+    STORAGE_Read(Dcb->Lun, (LPBYTE)BPB, 0, 1);                                  //MBRì¼ ìˆ˜ ìˆìŒ
     if (BPB->BootSctValidSign!=0xAA55)
         {
         FormatFirst:
@@ -1564,7 +1564,7 @@ LOCAL(BOOL) ReadVolID(DISKCONTROLBLOCK *Dcb)
 
     Dcb->FirstFatSctNo=BPB->SystemUseSctNo + Dcb->VolumeStartSctNo;
     Dcb->SecondFatSctNo=0;
-    RootDirScts=((PeekW((LPCVOID)&BPB->RootDirEntrys)<<5)+SUPPORTSECTORBYTES-1)/SUPPORTSECTORBYTES;  //FAT32¿¡¼­´Â 0
+    RootDirScts=((PeekW((LPCVOID)&BPB->RootDirEntrys)<<5)+SUPPORTSECTORBYTES-1)/SUPPORTSECTORBYTES;  //FAT32ì—ì„œëŠ” 0
     Dcb->SctsPerCluster=BPB->SectorsPerCluster;
 
     if ((TotalSectors=PeekW((LPCVOID)&BPB->OldTotalSectors))==0) TotalSectors=BPB->BigTotalSectors;
@@ -1620,7 +1620,7 @@ LOCAL(BOOL) ReadVolID(DISKCONTROLBLOCK *Dcb)
 
 #if JFAT_READOLNY==0
 //-----------------------------------------------------------------------------
-//      FATÀ» ¿¬¼ÓÀ¸·Î ÁÖ¾îÁø Å©±â¸¸Å­ ÇÒ´çÇÔ
+//      FATì„ ì—°ì†ìœ¼ë¡œ ì£¼ì–´ì§„ í¬ê¸°ë§Œí¼ í• ë‹¹í•¨
 //-----------------------------------------------------------------------------
 LOCAL(DWORD) AllocFat(DISKCONTROLBLOCK *Dcb, DWORD FileSize)
     {
@@ -1653,9 +1653,9 @@ LOCAL(DWORD) AllocFat(DISKCONTROLBLOCK *Dcb, DWORD FileSize)
 
 
 //-----------------------------------------------------------------------------
-//      LFN Entry¸¦ ¸¸µé¾î ÁÜ
+//      LFN Entryë¥¼ ë§Œë“¤ì–´ ì¤Œ
 //
-//      'Abcdefghijklmnopqrstuvwxyz.123'ÀÇ Entry ¿¹
+//      'Abcdefghijklmnopqrstuvwxyz.123'ì˜ Entry ì˜ˆ
 //
 // 43 2E 00 31 00 32 00 33 - 00 00 00 0F 00 2A FF FF C. 1 2 3     *
 // FF FF FF FF FF FF FF FF - FF FF 00 00 FF FF FF FF
@@ -1666,7 +1666,7 @@ LOCAL(DWORD) AllocFat(DISKCONTROLBLOCK *Dcb, DWORD FileSize)
 // 41 42 43 44 45 46 7E 31 - 31 32 33 20 00 2D D3 5A ABCDEF~1123
 // 52 37 52 37 00 00 D4 5A - 52 37 00 00 00 00 00 00
 //-----------------------------------------------------------------------------
-#define ONEENTRY_CHARS  13      //ÇÏ³ªÀÇ ¿£Æ®¸®¿¡ µé¾î°¡´Â ¹®ÀÚ ¼ö
+#define ONEENTRY_CHARS  13      //í•˜ë‚˜ì˜ ì—”íŠ¸ë¦¬ì— ë“¤ì–´ê°€ëŠ” ë¬¸ì ìˆ˜
 LOCAL(DIRENTRY*) JFAT_MakeLfn(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath)
     {
     int  Cha, I, Len, EnterQty, LfnCnt, LfnChkSum, Err=JFAT_NOERROR;
@@ -1675,13 +1675,13 @@ LOCAL(DIRENTRY*) JFAT_MakeLfn(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath)
     CHAR ExtName[4];
     DIRENTRY *Lfn, *DE;
     FILENAMEFINDRESULT FI;
-    static CONST BYTE LfnCharPos[]={1,3,5,7,9,0x0E,0x10,0x12,0x14,0x16,0x18,0x1C,0x1E,0};   //¸àµÚ0Àº ³¡ÀÌ¶ó´Â ÀÇ¹Ì
+    static CONST BYTE LfnCharPos[]={1,3,5,7,9,0x0E,0x10,0x12,0x14,0x16,0x18,0x1C,0x1E,0};   //ë©˜ë’¤0ì€ ëì´ë¼ëŠ” ì˜ë¯¸
 
     NewFileName=GetFileNameLocU8((LPSTR)FullPath);
-    if ((Len=GetChQtyU8(NewFileName)+1)>195) {Err=JFAT_LFNTOOLONG; goto ProcExit;}          //+1: ¸ÇµÚ Null¹®ÀÚ±îÁö
-    EnterQty=(Len+ONEENTRY_CHARS-1)/ONEENTRY_CHARS +1;                                      //+1Àº 8.3ÀÌ¸§ ÀúÀåÀ§Ä¡
+    if ((Len=GetChQtyU8(NewFileName)+1)>195) {Err=JFAT_LFNTOOLONG; goto ProcExit;}          //+1: ë§¨ë’¤ Nullë¬¸ìê¹Œì§€
+    EnterQty=(Len+ONEENTRY_CHARS-1)/ONEENTRY_CHARS +1;                                      //+1ì€ 8.3ì´ë¦„ ì €ì¥ìœ„ì¹˜
     Len=EnterQty*sizeof(DIRENTRY);
-    if ((Lfn=(DIRENTRY*)AllocMem(Len+lstrlen(FullPath)+16, MEMOWNER_JFAT_MakeLfn))==NULL) {Err=JFAT_INSUFFICIENTMEMORY; goto ProcExit;} //+16Àº 8.3ÆÄÀÏ¸í ¹öÆÛ
+    if ((Lfn=(DIRENTRY*)AllocMem(Len+lstrlen(FullPath)+16, MEMOWNER_JFAT_MakeLfn))==NULL) {Err=JFAT_INSUFFICIENTMEMORY; goto ProcExit;} //+16ì€ 8.3íŒŒì¼ëª… ë²„í¼
     ShortFilePath=(LPSTR)Lfn+Len;
     ZeroMem(Lfn, Len);
 
@@ -1726,7 +1726,7 @@ LOCAL(DIRENTRY*) JFAT_MakeLfn(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø Å¬·¯½ºÅÍÀÇ ÆÄÀÏ¿£Æ®¸®¿¡¼­ ÁÖ¾îÁø ÆÄÀÏ¸íÀ» »èÁ¦ÇÔ
+//      ì£¼ì–´ì§„ í´ëŸ¬ìŠ¤í„°ì˜ íŒŒì¼ì—”íŠ¸ë¦¬ì—ì„œ ì£¼ì–´ì§„ íŒŒì¼ëª…ì„ ì‚­ì œí•¨
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) EraseFileName(CONST DISKCONTROLBLOCK *Dcb, FILENAMEFINDRESULT *FI, LPBYTE SctBuff)
     {
@@ -1752,7 +1752,7 @@ LOCAL(BOOL) EraseFileName(CONST DISKCONTROLBLOCK *Dcb, FILENAMEFINDRESULT *FI, L
                 }
             if (STORAGE_Write(Lun, SctBuff, SctNo, 1)==FALSE) goto ProcExit;
 
-            if (FI->FindSectorNo==SctNo) break; //1¼½ÅÍ¸¦ ÃÊ°úÇÏÁö ¾Ê´Â ÃÖ´ë ÆÄÀÏ¸í ¹®ÀÚ¼ö (13*15=195)
+            if (FI->FindSectorNo==SctNo) break; //1ì„¹í„°ë¥¼ ì´ˆê³¼í•˜ì§€ ì•ŠëŠ” ìµœëŒ€ íŒŒì¼ëª… ë¬¸ììˆ˜ (13*15=195)
             SctNo=FI->FindSectorNo;
             SctOfs=0;
             }
@@ -1766,7 +1766,7 @@ LOCAL(BOOL) EraseFileName(CONST DISKCONTROLBLOCK *Dcb, FILENAMEFINDRESULT *FI, L
     Rslt++;
 
     ProcExit:
-    (VOID)Lun;      //STORAGE_Read()¸¦ #defineÀ¸·Î ¿¬°áÇÒ ¶§ LunÀÌ ¾²ÀÌ±â ¾ÊÀ¸¸é °æ°í°¡ ¹ß»ıÇÔ
+    (VOID)Lun;      //STORAGE_Read()ë¥¼ #defineìœ¼ë¡œ ì—°ê²°í•  ë•Œ Lunì´ ì“°ì´ê¸° ì•Šìœ¼ë©´ ê²½ê³ ê°€ ë°œìƒí•¨
     return Rslt;
     }
 
@@ -1774,7 +1774,7 @@ LOCAL(BOOL) EraseFileName(CONST DISKCONTROLBLOCK *Dcb, FILENAMEFINDRESULT *FI, L
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏ»èÁ¦ (¾ÆÁ÷ 194¹®ÀÚ¸¦ ÃÊ°úÇÏ´Â LFNÀÇ ÀÏºÎ´Â »èÁ¦¸¦ ¸øÇÔ)
+//      íŒŒì¼ì‚­ì œ (ì•„ì§ 194ë¬¸ìë¥¼ ì´ˆê³¼í•˜ëŠ” LFNì˜ ì¼ë¶€ëŠ” ì‚­ì œë¥¼ ëª»í•¨)
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) L_DeleteFile(DISKCONTROLBLOCK *Dcb, LPCSTR FilePath)
     {
@@ -1790,14 +1790,14 @@ LOCAL(BOOL) L_DeleteFile(DISKCONTROLBLOCK *Dcb, LPCSTR FilePath)
     Clust=(DE->ClusterNoHi<<16)+DE->StartCluster;
     FileSize=DE->FileSize;
 
-    //ÆÄÀÏ NameEntry »èÁ¦ (LFNµµ »èÁ¦)
+    //íŒŒì¼ NameEntry ì‚­ì œ (LFNë„ ì‚­ì œ)
     if (EraseFileName(Dcb, &FI, SctBuff)==FALSE) {Err=JFAT_DISKACCESSERROR; goto ProcExit;}
     if (Clust==0) goto ProcExit;
 
     AccSize=0;
     for (;;)
         {
-        Eof=SetFatEntry(Dcb, Clust, 0, &NextEntry); //¿£Æ®¸®ÀÇ ³¡ÀÌ¸é TRUE¸®ÅÏ
+        Eof=SetFatEntry(Dcb, Clust, 0, &NextEntry); //ì—”íŠ¸ë¦¬ì˜ ëì´ë©´ TRUEë¦¬í„´
         if (NextEntry==0) goto BrokenFat;
         if ((AccSize+=Dcb->SctsPerCluster*SUPPORTSECTORBYTES)>=FileSize)
             {
@@ -1821,7 +1821,7 @@ LOCAL(BOOL) L_DeleteFile(DISKCONTROLBLOCK *Dcb, LPCSTR FilePath)
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏ»èÁ¦ (¾ÆÁ÷ LFN ºÎºĞÀº »èÁ¦¸¦ ¸øÇÔ)
+//      íŒŒì¼ì‚­ì œ (ì•„ì§ LFN ë¶€ë¶„ì€ ì‚­ì œë¥¼ ëª»í•¨)
 //-----------------------------------------------------------------------------
 BOOL WINAPI JFAT_DeleteFile(LPCSTR FilePath)
     {
@@ -1841,7 +1841,7 @@ BOOL WINAPI JFAT_DeleteFile(LPCSTR FilePath)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø Å¬·¯½ºÅÍ¸¦ 0À¸·Î ClearÇÔ
+//      ì£¼ì–´ì§„ í´ëŸ¬ìŠ¤í„°ë¥¼ 0ìœ¼ë¡œ Clearí•¨
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) ZeroCluster(DISKCONTROLBLOCK *Dcb, DWORD ClusterNo)
     {
@@ -1864,7 +1864,7 @@ LOCAL(BOOL) ZeroCluster(DISKCONTROLBLOCK *Dcb, DWORD ClusterNo)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø »õ ¿£Æ®¸®¸¦ ±â·Ï
+//      ì£¼ì–´ì§„ ìƒˆ ì—”íŠ¸ë¦¬ë¥¼ ê¸°ë¡
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) WriteDirEntry(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, DIRENTRY *ToWrtDE, int ToWrtDEQty)
     {
@@ -1877,7 +1877,7 @@ LOCAL(BOOL) WriteDirEntry(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, DIRENTRY *ToWr
     FILENAMEFINDRESULT FI;
 
     SctBuff=Dcb->SctBuffer;
-    DirCluster=0;   //·çÆ® Å¬·¯½ºÅÍ
+    DirCluster=0;   //ë£¨íŠ¸ í´ëŸ¬ìŠ¤í„°
     for (;;)
         {
         if (SearchCha(FullPath, '/')<0) break;
@@ -1927,9 +1927,9 @@ LOCAL(BOOL) WriteDirEntry(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, DIRENTRY *ToWr
             }
         if (DirCluster==0 && Dcb->FatType!=32) {Err=JFAT_DIRENTRYFULL; goto ProcExit;}
         T=DirCluster;
-        if (GetNextCluster(Dcb, &DirCluster))   //EOFÀÌ¸é
+        if (GetNextCluster(Dcb, &DirCluster))   //EOFì´ë©´
             {
-            if ((DirCluster=AllocFatOne(Dcb))==0) {Err=JFAT_DISKFULL; goto ProcExit;}  //µğ½ºÅ©°¡ ²ËÂü
+            if ((DirCluster=AllocFatOne(Dcb))==0) {Err=JFAT_DISKFULL; goto ProcExit;}  //ë””ìŠ¤í¬ê°€ ê½‰ì°¸
             SetFatEntry(Dcb, T, DirCluster, NULL);
             SetFatEntry(Dcb, DirCluster, Dcb->FatType==16 ? FAT16_EOF:FAT32_EOF, NULL);
             if (ZeroCluster(Dcb, DirCluster)==FALSE) goto DiskErr;
@@ -1958,7 +1958,7 @@ LOCAL(BOOL) WriteDirEntry(DISKCONTROLBLOCK *Dcb, LPCSTR FullPath, DIRENTRY *ToWr
 
 
 //-----------------------------------------------------------------------------
-//      ÀÌ ÆÄÀÏ¸íÀÌ 8.3ÆÄÀÏÀÎ°¡¸¦ ¾Ë·ÁÁİ´Ï´Ù
+//      ì´ íŒŒì¼ëª…ì´ 8.3íŒŒì¼ì¸ê°€ë¥¼ ì•Œë ¤ì¤ë‹ˆë‹¤
 //-----------------------------------------------------------------------------
 LOCAL(BOOL) Is83FileName(LPCSTR InFileName)
     {
@@ -1973,7 +1973,7 @@ LOCAL(BOOL) Is83FileName(LPCSTR InFileName)
         if (Cha==0)   {Rslt++; break;}
         if (SearchCha(Valid83Char, Cha)<0) break;
 
-        if (J==8)       //ÆÄÀÏ¸í¸ğµå
+        if (J==8)       //íŒŒì¼ëª…ëª¨ë“œ
             {
             if (Cha=='.')
                 {
@@ -1984,7 +1984,7 @@ LOCAL(BOOL) Is83FileName(LPCSTR InFileName)
                 if (++I>J) break;
                 }
             }
-        else{           //È®ÀåÀÚ¸ğµå
+        else{           //í™•ì¥ìëª¨ë“œ
             if (Cha=='.') break;
             if (++I>J) break;
             }
@@ -1996,7 +1996,7 @@ LOCAL(BOOL) Is83FileName(LPCSTR InFileName)
 
 
 //-----------------------------------------------------------------------------
-//      ÆÄÀÏ »ı¼º
+//      íŒŒì¼ ìƒì„±
 //-----------------------------------------------------------------------------
 HFILE WINAPI JFAT_Create(LPCSTR FullPath, int Attr)
     {
@@ -2010,9 +2010,9 @@ HFILE WINAPI JFAT_Create(LPCSTR FullPath, int Attr)
     if ((Dcb=GetDCB(&FullPath, TRUE, TRUE))==NULL) goto Ret;
     JFAT_Lock(Dcb);
     if (Dcb->FatType!=16 && Dcb->FatType!=32) goto ProcExit;
-    if (GetNoUseFCB()<0) goto ProcExit;         //ÆÄÀÏÇÚµéºÎÁ·
+    if (GetNoUseFCB()<0) goto ProcExit;         //íŒŒì¼í•¸ë“¤ë¶€ì¡±
 
-    if (L_DeleteFile(Dcb, FullPath)==FALSE && GetLastError()!=JFAT_FILENOTFOUND) goto ProcExit;      //ÀÌ¹Ì ÀÖ´Â ÆÄÀÏÀº »èÁ¦
+    if (L_DeleteFile(Dcb, FullPath)==FALSE && GetLastError()!=JFAT_FILENOTFOUND) goto ProcExit;      //ì´ë¯¸ ìˆëŠ” íŒŒì¼ì€ ì‚­ì œ
 
     FileName=GetFileNameLocU8((LPSTR)FullPath);
     if (Is83FileName(FileName))
@@ -2051,7 +2051,7 @@ HFILE WINAPI JFAT_Create(LPCSTR FullPath, int Attr)
 
 
 //-----------------------------------------------------------------------------
-//      Æú´õ »ı¼º
+//      í´ë” ìƒì„±
 //-----------------------------------------------------------------------------
 BOOL WINAPI JFAT_CreateDirectory(LPCSTR FullPath)
     {
@@ -2090,7 +2090,7 @@ BOOL WINAPI JFAT_CreateDirectory(LPCSTR FullPath)
     DE->CreateTime=DE->LastModiTime=(WORD)DosTime;
     DE->CreateDate=DE->AccessDate=DE->LastModiDate=DosTime>>16;
     //DE->FileSize=0;
-    if ((DirCluster=AllocFatOne(Dcb))==0) {Err=JFAT_DISKFULL; goto ProcExit;}  //µğ½ºÅ©°¡ ²ËÂü
+    if ((DirCluster=AllocFatOne(Dcb))==0) {Err=JFAT_DISKFULL; goto ProcExit;}  //ë””ìŠ¤í¬ê°€ ê½‰ì°¸
     if (ZeroCluster(Dcb, DirCluster)==FALSE) {DiskErr: Err=JFAT_DISKACCESSERROR; goto ProcExit;}
     DE->ClusterNoHi=DirCluster>>16;
     DE->StartCluster=(WORD)DirCluster;
@@ -2130,11 +2130,11 @@ BOOL WINAPI JFAT_CreateDirectory(LPCSTR FullPath)
 
 
 //-----------------------------------------------------------------------------
-//      ÁÖ¾îÁø Å©±âÀÇ ÆÄÀÏ»ı¼º (8.3ÆÄÀÏ¸í¸¸ Áö¿ø, LFNÀº ¸¸µéÁö ¸øÇÔ)
-//      ¸®´ª½ºÀÇ touch ¿Í °°Àº ÇÔ¼ö
+//      ì£¼ì–´ì§„ í¬ê¸°ì˜ íŒŒì¼ìƒì„± (8.3íŒŒì¼ëª…ë§Œ ì§€ì›, LFNì€ ë§Œë“¤ì§€ ëª»í•¨)
+//      ë¦¬ëˆ…ìŠ¤ì˜ touch ì™€ ê°™ì€ í•¨ìˆ˜
 //
-//      ¿¬¼ÓÀûÀÎ ¹Ùµğ¸¦ °¡Áø ÆÄÀÏÀ» ¸¸µç ÈÄ ÆÄÀÏ ½Ã½ºÅÛÀ» ÀÌ¿ëÇÏÁö ¾Ê°í,
-//      ÆÄÀÏ ¹Ùµğ¿¡ ¹°¸®ÀûÀ¸·Î ¾ï¼¼½º¸¦ ÇÏ±â À§ÇÔ (¼¾¼­ µ¥ÀÌÅÍ¸¦ ºü¸£°Ô ÀúÀåÇÏ´Âµ¥ »ç¿ë)
+//      ì—°ì†ì ì¸ ë°”ë””ë¥¼ ê°€ì§„ íŒŒì¼ì„ ë§Œë“  í›„ íŒŒì¼ ì‹œìŠ¤í…œì„ ì´ìš©í•˜ì§€ ì•Šê³ ,
+//      íŒŒì¼ ë°”ë””ì— ë¬¼ë¦¬ì ìœ¼ë¡œ ì–µì„¸ìŠ¤ë¥¼ í•˜ê¸° ìœ„í•¨ (ì„¼ì„œ ë°ì´í„°ë¥¼ ë¹ ë¥´ê²Œ ì €ì¥í•˜ëŠ”ë° ì‚¬ìš©)
 //-----------------------------------------------------------------------------
 DWORD WINAPI CreateNewFile(LPCSTR FullPath, int Attr, DWORD FileSize)
     {
@@ -2332,7 +2332,7 @@ static CONST BYTE F32BootSector[]=
 
 
 //-----------------------------------------------------------------------------
-//      ¼½ÅÍ¸¦ 0À¸·Î ClearÇÔ
+//      ì„¹í„°ë¥¼ 0ìœ¼ë¡œ Clearí•¨
 //-----------------------------------------------------------------------------
 #define COPYSECTORQTY   127
 LOCAL(VOID) FillPhysicalSector(int Lun, DWORD SctNo, int SctQty, LPBYTE SctBuff)
@@ -2344,7 +2344,7 @@ LOCAL(VOID) FillPhysicalSector(int Lun, DWORD SctNo, int SctQty, LPBYTE SctBuff)
 
 
 //-----------------------------------------------------------------------------
-//      µğ½ºÅ© ½Ã¸®¾ó ¹øÈ£¸¦ ¸¸µê
+//      ë””ìŠ¤í¬ ì‹œë¦¬ì–¼ ë²ˆí˜¸ë¥¼ ë§Œë“¦
 //-----------------------------------------------------------------------------
 LOCAL(DWORD) SetDiskSerialNo(VOID)
     {
@@ -2357,7 +2357,7 @@ LOCAL(DWORD) SetDiskSerialNo(VOID)
 
 
 //-----------------------------------------------------------------------------
-//      1ÀÎ ºñÆ®°¡ 1°³ÀÎ Num ÀÌ»óÀÎ °¡Àå ÀÛÀº ¼ö¸¦ ¸®ÅÏ
+//      1ì¸ ë¹„íŠ¸ê°€ 1ê°œì¸ Num ì´ìƒì¸ ê°€ì¥ ì‘ì€ ìˆ˜ë¥¼ ë¦¬í„´
 //-----------------------------------------------------------------------------
 LOCAL(int) Cnv1BitNum(int Num)
     {
@@ -2370,8 +2370,8 @@ LOCAL(int) Cnv1BitNum(int Num)
 
 
 //-----------------------------------------------------------------------------
-//      HDDÀÇ ÁÖ¾îÁø ÆÄÆ¼¼ÇÀ» ºü¸¥FormatÀ» ÇÕ´Ï´Ù
-//      FALSE¸¦ ¸®ÅÏÇÏ¸é FAT32À¸·Î´Â Æ÷¸ËÇÒ ¼ö ¾øÀ½À» ³ªÅ¸³¿
+//      HDDì˜ ì£¼ì–´ì§„ íŒŒí‹°ì…˜ì„ ë¹ ë¥¸Formatì„ í•©ë‹ˆë‹¤
+//      FALSEë¥¼ ë¦¬í„´í•˜ë©´ FAT32ìœ¼ë¡œëŠ” í¬ë§·í•  ìˆ˜ ì—†ìŒì„ ë‚˜íƒ€ëƒ„
 //-----------------------------------------------------------------------------
 BOOL WINAPI FormatFAT32(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY *VolDE, UINT ClusterSize, LPBYTE SctBuff)
     {
@@ -2386,13 +2386,13 @@ BOOL WINAPI FormatFAT32(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
     BR->HeadQty=128;            //(WORD)DG.TracksPerCylinder;
     BR->FS32SerialNo=SetDiskSerialNo();
     BR->FS32PhyDiskNo=StartSctNo!=0 ? 0xF0:0x00;
-    BR->MediaSign=StartSctNo!=0 ? 0xF8:0xF0;            //ÆÄÆ¼¼ÇÀÌ ÀÖÀ¸¸é HDD, ¾Æ´Ï¸é FDD
+    BR->MediaSign=StartSctNo!=0 ? 0xF8:0xF0;            //íŒŒí‹°ì…˜ì´ ìˆìœ¼ë©´ HDD, ì•„ë‹ˆë©´ FDD
     if (VolDE!=NULL) CopyMem(BR->FS32VolumeLabel, VolDE->FileName, 11);
 
     if (ClusterSize!=0) BR->SectorsPerCluster=ClusterSize>>9;
     else                BR->SectorsPerCluster=GetMin(64, Cnv1BitNum(TotalSctors>>21));
     //if (BR->SectorsPerCluster<8) BR->SectorsPerCluster=8;
-    //FAT32 Å¬·¯½ºÆ¼ Å©±â °áÁ¤
+    //FAT32 í´ëŸ¬ìŠ¤í‹° í¬ê¸° ê²°ì •
     //512MB ~ 8GB,    8 sectors per cluster
     //      ~ 16GB,   16 sectors per cluster
     //      ~ 32GB,   32 sectors per cluster
@@ -2420,11 +2420,11 @@ BOOL WINAPI FormatFAT32(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
 
     Printf("Writing First FAT..." CRLF);
     ZeroMem(BR, sizeof(BPB_F32));
-    *(DWORD*)((LPBYTE)BR+0)=0x0FFFFFF0;         //Chkdsk ·Î ÀÌ»ó¾øÀ½À» °ËÁõÇÔ
+    *(DWORD*)((LPBYTE)BR+0)=0x0FFFFFF0;         //Chkdsk ë¡œ ì´ìƒì—†ìŒì„ ê²€ì¦í•¨
     *(DWORD*)((LPBYTE)BR+4)=0x0FFFFFFF;
-    *(DWORD*)((LPBYTE)BR+8)=0x0FFFFFFF;         //2¹øÅ¬·¯½ºÅÍ: ·çÆ®µğ·ºÅä¸®
+    *(DWORD*)((LPBYTE)BR+8)=0x0FFFFFFF;         //2ë²ˆí´ëŸ¬ìŠ¤í„°: ë£¨íŠ¸ë””ë ‰í† ë¦¬
     STORAGE_Write(DrvNo, (LPCBYTE)BR, StartSctNo, 1); StartSctNo++;
-    FillPhysicalSector(DrvNo, StartSctNo, FatSctQty, (LPBYTE)BR); StartSctNo+=FatSctQty;    //SctBuffer»ç¿ë
+    FillPhysicalSector(DrvNo, StartSctNo, FatSctQty, (LPBYTE)BR); StartSctNo+=FatSctQty;    //SctBufferì‚¬ìš©
 
     Printf("Writing Second FAT..." CRLF);
     ZeroMem(BR, sizeof(BPB_F32));
@@ -2432,7 +2432,7 @@ BOOL WINAPI FormatFAT32(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
     *(DWORD*)((LPBYTE)BR+4)=0x0FFFFFFF;
     *(DWORD*)((LPBYTE)BR+8)=0x0FFFFFFF;
     STORAGE_Write(DrvNo, (LPCBYTE)BR, StartSctNo, 1); StartSctNo++;
-    FillPhysicalSector(DrvNo, StartSctNo, FatSctQty, (LPBYTE)BR); StartSctNo+=FatSctQty;    //SctBuffer»ç¿ë
+    FillPhysicalSector(DrvNo, StartSctNo, FatSctQty, (LPBYTE)BR); StartSctNo+=FatSctQty;    //SctBufferì‚¬ìš©
 
     if (VolDE!=NULL)
         {
@@ -2441,7 +2441,7 @@ BOOL WINAPI FormatFAT32(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
         STORAGE_Write(DrvNo, (LPCBYTE)BR, StartSctNo, 1); StartSctNo++;
         RootDirSctQty--;
         }
-    FillPhysicalSector(DrvNo, StartSctNo, RootDirSctQty, (LPBYTE)BR);           //SctBuffer»ç¿ë, µÎ¹øÂ° FAT´ÙÀ½ÀÌ 2¹ø Å¬·¯½ºÅÍÀÌ°í °Å±â°¡ RootDirÀÓ
+    FillPhysicalSector(DrvNo, StartSctNo, RootDirSctQty, (LPBYTE)BR);           //SctBufferì‚¬ìš©, ë‘ë²ˆì§¸ FATë‹¤ìŒì´ 2ë²ˆ í´ëŸ¬ìŠ¤í„°ì´ê³  ê±°ê¸°ê°€ RootDirì„
 
     Printf("Completed Formatting." CRLF);
     Rslt++;
@@ -2454,7 +2454,7 @@ BOOL WINAPI FormatFAT32(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
 
 
 //-----------------------------------------------------------------------------
-//      HDDÀÇ ÁÖ¾îÁø ÆÄÆ¼¼ÇÀ» FAT16À¸·Î ºü¸¥FormatÀ» ÇÕ´Ï´Ù
+//      HDDì˜ ì£¼ì–´ì§„ íŒŒí‹°ì…˜ì„ FAT16ìœ¼ë¡œ ë¹ ë¥¸Formatì„ í•©ë‹ˆë‹¤
 //-----------------------------------------------------------------------------
 BOOL WINAPI FormatFAT16(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY *VolDE, UINT ClusterSize, LPBYTE SctBuff)
     {
@@ -2462,7 +2462,7 @@ BOOL WINAPI FormatFAT16(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
     BPB_F16 *BR;
 
     Printf("TotalSctors=%u" CRLF,TotalSctors);
-    if (TotalSctors<16384)  //8MByte ÀÌÇÏ´Â Áö¿ø¾ÈÇÔ
+    if (TotalSctors<16384)  //8MByte ì´í•˜ëŠ” ì§€ì›ì•ˆí•¨
         {
         Printf("Too small to be formatting with FAT16." CRLF);
         goto ProcExit;
@@ -2475,7 +2475,7 @@ BOOL WINAPI FormatFAT16(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
     //BR->SectorsPerHead=63;
     //BR->HeadQty=255;
     //BR->PhyDiskNo=StartSctNo!=0 ? 0xF0:0x00;
-    //BR->MediaSign=StartSctNo!=0 ? 0xF8:0xF0;      //ÆÄÆ¼¼ÇÀÌ ÀÖÀ¸¸é HDD, ¾Æ´Ï¸é FDD
+    //BR->MediaSign=StartSctNo!=0 ? 0xF8:0xF0;      //íŒŒí‹°ì…˜ì´ ìˆìœ¼ë©´ HDD, ì•„ë‹ˆë©´ FDD
     if (VolDE!=NULL) CopyMem(BR->VolumeLabel, VolDE->FileName, 11);
 
     if (ClusterSize!=0) BR->SectorsPerCluster=ClusterSize>>9;
@@ -2510,12 +2510,12 @@ BOOL WINAPI FormatFAT16(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
     Printf("Writing First FAT..." CRLF);
     ZeroMem(BR, sizeof(BPB_F16)); *(DWORD*)BR=0xFFFFFFF0;
     STORAGE_Write(DrvNo, (LPCBYTE)BR, StartSctNo, 1); StartSctNo++;
-    FillPhysicalSector(DrvNo, StartSctNo, FatSctQty, (LPBYTE)BR); StartSctNo+=FatSctQty;    //SctBuffer»ç¿ë
+    FillPhysicalSector(DrvNo, StartSctNo, FatSctQty, (LPBYTE)BR); StartSctNo+=FatSctQty;    //SctBufferì‚¬ìš©
 
     Printf("Writing Second FAT..." CRLF);
     ZeroMem(BR, sizeof(BPB_F16)); *(DWORD*)BR=0xFFFFFFF0;
     STORAGE_Write(DrvNo, (LPCBYTE)BR, StartSctNo, 1); StartSctNo++;
-    FillPhysicalSector(DrvNo, StartSctNo, FatSctQty, (LPBYTE)BR); StartSctNo+=FatSctQty;    //SctBuffer»ç¿ë
+    FillPhysicalSector(DrvNo, StartSctNo, FatSctQty, (LPBYTE)BR); StartSctNo+=FatSctQty;    //SctBufferì‚¬ìš©
 
     if (VolDE!=NULL)
         {
@@ -2524,7 +2524,7 @@ BOOL WINAPI FormatFAT16(int DrvNo, DWORD StartSctNo, DWORD TotalSctors, DIRENTRY
         STORAGE_Write(DrvNo, (LPCBYTE)BR, StartSctNo, 1); StartSctNo++;
         RootDirSctQty--;
         }
-    FillPhysicalSector(DrvNo, StartSctNo, RootDirSctQty, (LPBYTE)BR);           //SctBuffer»ç¿ë, µÎ¹øÂ° FAT´ÙÀ½ÀÌ 2¹ø Å¬·¯½ºÅÍÀÌ°í °Å±â°¡ RootDirÀÓ
+    FillPhysicalSector(DrvNo, StartSctNo, RootDirSctQty, (LPBYTE)BR);           //SctBufferì‚¬ìš©, ë‘ë²ˆì§¸ FATë‹¤ìŒì´ 2ë²ˆ í´ëŸ¬ìŠ¤í„°ì´ê³  ê±°ê¸°ê°€ RootDirì„
 
     Printf("Completed Formatting." CRLF);
     Rslt++;
@@ -2559,7 +2559,7 @@ BOOL WINAPI JFAT_Formatting(LPCSTR DriveRootPath)
 
 
 //-----------------------------------------------------------------------------
-//      ¸àµÚ¿¡¼­ ºÎÅÍ ¾È¾´ °ø°£ÀÇ ½ÃÀÛÀ§Ä¡(¼½ÅÍ¹øÈ£)¸¦ ¸®ÅÏÇÔ
+//      ë©˜ë’¤ì—ì„œ ë¶€í„° ì•ˆì“´ ê³µê°„ì˜ ì‹œì‘ìœ„ì¹˜(ì„¹í„°ë²ˆí˜¸)ë¥¼ ë¦¬í„´í•¨
 //-----------------------------------------------------------------------------
 DWORD WINAPI JFAT_GetNoUsePos(LPCSTR DriveRootPath)
     {
@@ -2580,8 +2580,8 @@ DWORD WINAPI JFAT_GetNoUsePos(LPCSTR DriveRootPath)
 
 
 //-----------------------------------------------------------------------------
-//      º¼·ı Á¤º¸¸¦ ÀĞ¾î¿È (FATÁ¾·ù¿Í ÃÑ¼½ÅÍ¼ö)
-//      MakeImageDisk.exe ¿¡¼­ »ç¿ë
+//      ë³¼ë¥¨ ì •ë³´ë¥¼ ì½ì–´ì˜´ (FATì¢…ë¥˜ì™€ ì´ì„¹í„°ìˆ˜)
+//      MakeImageDisk.exe ì—ì„œ ì‚¬ìš©
 //-----------------------------------------------------------------------------
 BOOL WINAPI JFAT_GetInfo(UINT Lun, int *lpFatType, DWORD *lpTotalScts, DWORD *lpFreeScts)
     {
@@ -2602,7 +2602,7 @@ BOOL WINAPI JFAT_GetInfo(UINT Lun, int *lpFatType, DWORD *lpTotalScts, DWORD *lp
 
 
 //-----------------------------------------------------------------------------
-//      JFAT ÃÊ±âÈ­
+//      JFAT ì´ˆê¸°í™”
 //-----------------------------------------------------------------------------
 BOOL WINAPI JFAT_Init(UINT Lun, BOOL Verbose)
     {
@@ -2614,7 +2614,7 @@ BOOL WINAPI JFAT_Init(UINT Lun, BOOL Verbose)
     if ((Dcb=CheckLunSpace(Lun))==NULL) goto ProcExit;
     ZeroMem(Dcb, sizeof(DISKCONTROLBLOCK));
     Dcb->Lun=Lun;
-    Dcb->FatCachedSctNo=~0;     //-1ÀÌ¸é Ä³½¬µÇÁö ¾ÊÀº °ÍÀÓ
+    Dcb->FatCachedSctNo=~0;     //-1ì´ë©´ ìºì‰¬ë˜ì§€ ì•Šì€ ê²ƒì„
     #ifdef USE_JOS
     Dcb->DCB_Sem=JOSSemCreate(1);
     #endif
@@ -2641,7 +2641,7 @@ BOOL WINAPI JFAT_Init(UINT Lun, BOOL Verbose)
 
 
 //-----------------------------------------------------------------------------
-//      µğ·ºÅä¸® Ç¥½Ã
+//      ë””ë ‰í† ë¦¬ í‘œì‹œ
 //-----------------------------------------------------------------------------
 int WINAPI Mon_FileSystem(int PortNo, LPCSTR MonCmd, LPCSTR Arg, LPCSTR CmdLine)
     {

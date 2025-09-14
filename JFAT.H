@@ -1,4 +1,4 @@
-#ifndef __JFAT_H__
+ï»¿#ifndef __JFAT_H__
 #define __JFAT_H__
 
 
@@ -59,25 +59,25 @@ BOOL  WINAPI JFAT_GetInfo(UINT Lun, int *lpFatType, DWORD *lpTotalScts, DWORD *l
 struct _DISKCONTROLBLOCK;
 typedef struct _JFAT_FIND_DATA
     {
-    DWORD DirClust;         //Áö±İ Ã³¸®ÁßÀÎ Å¬·¯½ºÅÍ ¹øÈ£
-    UINT  SctOfsInClust;    //Å¬·¯½ºÅÍ Áß¿¡ ¼½ÅÍ Offset
-    UINT  OfsInSct;         //¼½ÅÍ ³» DirEntry Offset (Byte´ÜÀ§)
-    DWORD ClustStartSctNo;  //Å¬·¯½ºÅÍ ½ÃÀÛ¼½ÅÍ¹øÈ£
-    UINT  EntryBlockSctQty; //ÆÄÀÏ ¿£Æ®¸® ºí·° ¼½ÅÍ¼ö
+    DWORD DirClust;         //ì§€ê¸ˆ ì²˜ë¦¬ì¤‘ì¸ í´ëŸ¬ìŠ¤í„° ë²ˆí˜¸
+    UINT  SctOfsInClust;    //í´ëŸ¬ìŠ¤í„° ì¤‘ì— ì„¹í„° Offset
+    UINT  OfsInSct;         //ì„¹í„° ë‚´ DirEntry Offset (Byteë‹¨ìœ„)
+    DWORD ClustStartSctNo;  //í´ëŸ¬ìŠ¤í„° ì‹œì‘ì„¹í„°ë²ˆí˜¸
+    UINT  EntryBlockSctQty; //íŒŒì¼ ì—”íŠ¸ë¦¬ ë¸”ëŸ­ ì„¹í„°ìˆ˜
     struct _DISKCONTROLBLOCK  *Dcb;
-    BYTE  Eof;              //1ÀÌ¸é ³¡ÀÓ
-    CHAR  Wildcard[LFN_MAXLEN]; //L_FindNextFile()¿¡¼­ »ç¿ë
-    //ÀÌ À§´Â ³»ºÎ¿¡¼­ Ã³¸®ÇÏ±â À§ÇÔ
+    BYTE  Eof;              //1ì´ë©´ ëì„
+    CHAR  Wildcard[LFN_MAXLEN]; //L_FindNextFile()ì—ì„œ ì‚¬ìš©
+    //ì´ ìœ„ëŠ” ë‚´ë¶€ì—ì„œ ì²˜ë¦¬í•˜ê¸° ìœ„í•¨
     DWORD dwFileAttributes;
     DWORD nFileSizeLow;
     //DWORD nFileSizeHigh;
     JTIME ftLastWriteTime;
     CHAR  cAlternateFileName[16];
     CHAR  cFileName[LFN_MAXLEN];
-    BYTE  SctBuff[SUPPORTSECTORBYTES] ALIGN_END;    //SctBuff°¡ 4·Î ³ª´©¾îÁö´Â ¾îµå·¹½º¿¡ ¹èÄ¡µÇ°Ô ÇÏ±â À§ÇÔ
+    BYTE  SctBuff[SUPPORTSECTORBYTES] ALIGN_END;    //SctBuffê°€ 4ë¡œ ë‚˜ëˆ„ì–´ì§€ëŠ” ì–´ë“œë ˆìŠ¤ì— ë°°ì¹˜ë˜ê²Œ í•˜ê¸° ìœ„í•¨
     } WIN32_FIND_DATA;
 
-//WIN32_FIND_DATA.dwFileAttributes¿Í GetFileAttributes()ÀÇ ¸®ÅÏ °ª
+//WIN32_FIND_DATA.dwFileAttributesì™€ GetFileAttributes()ì˜ ë¦¬í„´ ê°’
 #define FILE_ATTRIBUTE_READONLY     0x00000001
 #define FILE_ATTRIBUTE_HIDDEN       0x00000002
 #define FILE_ATTRIBUTE_SYSTEM       0x00000004
@@ -94,7 +94,7 @@ BOOL WINAPI JFAT_FindNextFile(WIN32_FIND_DATA *WFD);
 BOOL WINAPI JFAT_Formatting(LPCSTR DriveRootPath);
 BOOL WINAPI JFAT_Init(UINT Lun, BOOL Verbose);
 
-//GetLastError()ÀÇ ¸®ÅÏ °ª
+//GetLastError()ì˜ ë¦¬í„´ ê°’
 #define JFAT_NOERROR            0
 #define JFAT_FILENOTFOUND       1
 #define JFAT_PATHNOTFOUND       2
